@@ -1,0 +1,4 @@
+Copy the official company logo into this folder and name it exactly:  Logo.png
+(full path: public/assets/Logo.png)
+The app header, footer, drawing title block and PDFs all use it automatically.
+Until the file exists, the app shows the text "ULTRAPLAST" instead and the title block leaves the logo box empty.

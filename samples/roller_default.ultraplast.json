@@ -1,0 +1,23 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Conveyor roller",
+    "familyId": "roller",
+    "params": {
+      "tubeOD": 50,
+      "wall": 2.5,
+      "tubeLength": 400,
+      "capThk": 6,
+      "stubDia": 12,
+      "stubLength": 25,
+      "load": 0,
+      "sf": 2,
+      "material": "S235 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

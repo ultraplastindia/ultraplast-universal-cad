@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Hexagonal shaft",
+    "familyId": "hexshaft",
+    "params": {
+      "af": 22,
+      "length": 500,
+      "torque": 0,
+      "sf": 3,
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

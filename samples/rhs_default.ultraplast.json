@@ -1,0 +1,22 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Rectangular hollow section",
+    "familyId": "rhs",
+    "params": {
+      "w": 40,
+      "h": 40,
+      "t": 3,
+      "length": 1000,
+      "load": 0,
+      "span": 1000,
+      "sf": 1.5,
+      "material": "S235 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

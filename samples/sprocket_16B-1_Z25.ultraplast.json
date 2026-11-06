@@ -1,0 +1,25 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: 16B-1 sprocket, 25 teeth",
+    "familyId": "sprocket",
+    "params": {
+      "chain": "16B-1",
+      "pitch": 25.4,
+      "rollerDia": 15.88,
+      "innerWidth": 17.02,
+      "teeth": 25,
+      "bore": 56,
+      "keyway": true,
+      "hubDia": 96,
+      "hubLength": 45,
+      "tipMode": "mid",
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-30T00:00:00.000Z",
+    "updatedAt": "2026-10-30T00:00:00.000Z"
+  }
+}

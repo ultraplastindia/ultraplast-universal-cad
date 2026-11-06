@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Hexagon nut (ISO 4032)",
+    "familyId": "hexnut",
+    "params": {
+      "size": "M10",
+      "dia": 10,
+      "s": 16,
+      "m": 8.4,
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Wear strip",
+    "familyId": "wearstrip",
+    "params": {
+      "length": 1000,
+      "width": 25,
+      "thickness": 8,
+      "holes": 10,
+      "holeDia": 6.5,
+      "edge": 50,
+      "material": "UHMW-PE"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

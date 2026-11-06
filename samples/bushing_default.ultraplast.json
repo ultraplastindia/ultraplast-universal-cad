@@ -1,0 +1,20 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Bushing / sleeve / spacer",
+    "familyId": "bushing",
+    "params": {
+      "boreDia": 25,
+      "outerDia": 32,
+      "length": 30,
+      "flangeDia": 0,
+      "flangeThk": 4,
+      "material": "Brass CuZn39Pb3"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: 08B-1 sprocket, 17 teeth",
+    "familyId": "sprocket",
+    "params": {
+      "chain": "08B-1",
+      "pitch": 12.7,
+      "rollerDia": 8.51,
+      "innerWidth": 7.75,
+      "teeth": 17,
+      "bore": 18,
+      "keyway": true,
+      "hubDia": 35,
+      "hubLength": 14,
+      "tipMode": "mid",
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-30T00:00:00.000Z",
+    "updatedAt": "2026-10-30T00:00:00.000Z"
+  }
+}

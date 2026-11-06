@@ -1,1 +1,78 @@
-# ultraplast-universal-cad
+# Ultraplast Universal Conveyor Components Designer (v0.3)
+
+Browser-based parametric design tool for Ultraplast Chainbelts Private Limited (https://www.ultraplastindia.com/).
+Search a component, enter parameters, get calculated dimensions, a 2D drawing and a 3D model, then export CAD files.
+**Every result is PRELIMINARY and must be validated by an engineer before manufacture.**
+
+## What works in v0.3
+| Area | Status |
+|---|---|
+| Search | Header search on every page (press `/`), autocomplete, category/material filters, searchable size pickers, search in Saved designs and Coverage |
+| Components | **21 families, 585 ready-made variants**: roller chain sprocket (ISO 606), stepped shaft, deep-groove bearing, parallel key, washer, hex nut, hex bolt, socket cap screw, dowel pin, bushing/sleeve/spacer, conveyor roller, hexagonal shaft, belt pulley, guide/wear wheel, wear strip, angle guide rail, U-channel, round tube, rectangular hollow section, adjustable leg, mounting/transfer plate |
+| Minimum-value input | **Quick mode**: enter only the key values (for example sprocket: chain, teeth, bore); everything else is derived and listed. **Advanced mode** exposes every parameter. Both modes use the same calculations |
+| Accuracy | Tessellation within 0.003 mm of the true curve. Automated tests prove every dimension on every drawing equals the geometry it measures, DXF coordinates equal the sheet coordinates (0.0001 mm), and each component's formula mass equals the volume of its 3D geometry |
+| 2D drawing | Dimensioned views, section, detail, isometric edge view, A3 title block with logo, zoom/pan, layer toggles, measure, click-to-select, edit dimensions that are direct parameters |
+| 3D model | Orbit/zoom/pan, standard views, wireframe, section, exploded, hide/show, selection, finish controls |
+| Assembly designer | Add/duplicate/remove, numeric position and rotation, nudge, align on an axis, bore fit and interference checks, exploded view, 2D assembly drawing, BOM, **roller conveyor section preset**, save/open/import/export |
+| Exports | DXF, SVG, PNG, PDF drawing (watermark), spec PDF, STL, OBJ, GLB, GLTF, STEP, BOM CSV, dimension CSV, project JSON, full ZIP, for parts and assemblies |
+| Storage | Browser storage (IndexedDB) with import/export. See "Optional cloud database" below |
+| Not yet | 77 of 125 catalogue items (plastic chains and belts, motors/gearboxes, complete frames, most assemblies), Ultraplast proprietary data, dragging parts in 3D. See `docs/LIMITATIONS.md` and the in-app Coverage page |
+
+**Read `docs/LIMITATIONS.md` first.** 138 automated tests pass. Deployment of v0.2 was confirmed working; v0.3 has been type-checked and tested but the new screens have not been opened in a browser by the author.
+
+## Windows: first-time setup
+1. Install **Node.js LTS** from https://nodejs.org (accept defaults). Restart your computer if asked.
+2. Extract the ZIP. Open the `ultraplast-designer` folder, click the address bar, type `cmd` and press Enter.
+3. **Add the logo:** copy your `Logo.png` into `public\assets\` (exact name `Logo.png`).
+4. Install packages (needs internet, takes a few minutes):
+   ```
+   npm install
+   ```
+5. Pin the CAD kernel versions: run `npm ls replicad replicad-opencascadejs`, then in `package.json` replace both `"*"` with the shown version, for example `"^0.18.0"`, and run `npm install` again.
+6. Start the app: `npm run dev` and open the address it prints (usually http://localhost:5173).
+7. Run tests: `npm test`. Check types and build: `npm run build`.
+8. Try the sample files in `samples\` via **Saved designs > Import project file**.
+
+If something fails, copy the full red error text; it points to the exact file and line.
+
+## Put it on GitHub and Vercel
+1. Create a free account at https://github.com and click **New repository** (name: `ultraplast-designer`, keep it Private). Do not add a README.
+2. Install **Git for Windows** (https://git-scm.com). In the project folder, in `cmd`:
+   ```
+   git init
+   git add .
+   git commit -m "Ultraplast designer v0.3"
+   git branch -M main
+   git remote add origin https://github.com/YOUR-USER/ultraplast-designer.git
+   git push -u origin main
+   ```
+   (GitHub asks you to sign in in the browser the first time.)
+3. Go to https://vercel.com, sign in with GitHub, click **Add New > Project**, pick the repository, and press **Deploy**. Vercel detects Vite automatically (`vercel.json` is included). You get a public `.vercel.app` address.
+4. **Updating the live site:** replace the files in your folder with the new version (keep your `public\assets\Logo.png` and `node_modules` if present), then:
+   ```
+   git add .
+   git commit -m "Update"
+   git push
+   ```
+   Vercel rebuilds and redeploys within a minute or two.
+
+## Technology and why
+React + TypeScript + Vite (fast, type-safe, static hosting on Vercel). three.js + react-three-fiber (3D viewport). replicad on OpenCascade WebAssembly (true B-rep solids and genuine STEP export in the browser; no server). jsPDF (vector PDF), JSZip (packages), idb (IndexedDB). Vitest for tests. No databases, no extra hosting, no secrets.
+
+## Architecture (short)
+- `src/families/`: each family has pure calculation, 2D views and a `geo()` made of exact primitives (`src/core/prims.ts`). The 3D mesh, the STEP solid, the projected views and the assembly checks all derive from that one description.
+- `src/assembly/`: placement, fit and interference rules, BOM, assembly drawing and exports.
+- `src/cad2d/sheet.ts`: scales views, expands dimensions/hatching, builds the title block. SVG, DXF and PDF all consume the same sheet entities.
+- `src/exporters/`: file writers. `src/storage/`: IndexedDB and project files. `src/data/`: standards tables and the catalogue register.
+
+## Local storage warning
+Saved designs live only in this browser on this computer. They are not synced between devices and can be erased with browser data. Use Export to back up.
+
+## Optional cloud database (Neon)
+Not needed today: saving works in the browser. A database only becomes useful if you want designs saved to your account and available on other computers, or shared by link. That needs a Neon Postgres database, a small Vercel API (`/api` functions) that holds the connection string as a secret environment variable, and real sign-in so people cannot read each other's designs. Tell me you want it and I will say exactly what to create in Neon and Vercel; no keys ever go in the front-end code.
+
+## What is new in v0.4
+- **Custom components (enter values only):** three new families in category J: *Custom block / plate*, *Custom round part* (up to three diameters and an optional bore) and *Custom outline part* (any flat shape typed as x,y points, with optional round holes and cut-outs). Any material, or your own density. Each gives the 2D drawing, 3D model, mass and all exports.
+- **Image to 3D:** menu *Image to 3D*. Upload a picture, the outline is traced in your browser, you enter one real size and a thickness, and it creates a *Custom outline part*. One picture gives an extruded outline only (no depth detail). Always check it against the real part.
+- **Neon cloud database and accounts:** sign in on the *Account* page to save designs, assemblies, custom parts and pictures in Neon. Setup is in `docs/NEON_SETUP.md`. Without the setup the site works as before, saving in the browser.
+- New files: `api/` (server functions), `db/schema.sql`, `src/cloud/`, `src/families/custom/`, `src/lib/trace.ts`, `src/pages/ImagePage.tsx`, `src/pages/AccountPage.tsx`, `tests/custom.test.ts`, `.env.example`. The earlier "Optional cloud database" section above is now implemented.

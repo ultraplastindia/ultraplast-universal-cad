@@ -1,0 +1,110 @@
+{
+  "format": "ultraplast-assembly",
+  "version": 1,
+  "assembly": {
+    "id": "sample",
+    "name": "Sample: drive shaft with sprocket and bearings",
+    "items": [
+      {
+        "id": "i_mvw5caorb4am",
+        "familyId": "shaft",
+        "name": "Drive shaft",
+        "params": {
+          "d1": 25,
+          "l1": 300,
+          "d2": 0,
+          "l2": 0,
+          "d3": 0,
+          "l3": 0,
+          "torque": 0,
+          "sf": 3,
+          "material": "C45 Steel"
+        },
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "i_mvw5caort3z3",
+        "familyId": "bearing",
+        "name": "Bearing A",
+        "params": {
+          "designation": "6205",
+          "d": 25,
+          "D": 52,
+          "B": 15,
+          "material": "Chrome Steel 100Cr6"
+        },
+        "pos": [
+          0,
+          0,
+          30
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "i_mvw5caorciwt",
+        "familyId": "sprocket",
+        "name": "Drive sprocket",
+        "params": {
+          "chain": "08B-1",
+          "pitch": 12.7,
+          "rollerDia": 8.51,
+          "innerWidth": 7.75,
+          "teeth": 17,
+          "bore": 25,
+          "keyway": true,
+          "hubDia": 42,
+          "hubLength": 20,
+          "tipMode": "mid",
+          "material": "C45 Steel"
+        },
+        "pos": [
+          0,
+          0,
+          100
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "i_mvw5caor7mar",
+        "familyId": "bearing",
+        "name": "Bearing B",
+        "params": {
+          "designation": "6205",
+          "d": 25,
+          "D": 52,
+          "B": 15,
+          "material": "Chrome Steel 100Cr6"
+        },
+        "pos": [
+          0,
+          0,
+          255
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

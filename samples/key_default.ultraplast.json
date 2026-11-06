@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Parallel key (DIN 6885)",
+    "familyId": "key",
+    "params": {
+      "shaftDia": 25,
+      "length": 32,
+      "torque": 0,
+      "sf": 2,
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

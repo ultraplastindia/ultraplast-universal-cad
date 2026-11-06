@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Angle guide rail",
+    "familyId": "angle",
+    "params": {
+      "a": 40,
+      "b": 40,
+      "t": 4,
+      "length": 1000,
+      "material": "S235 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

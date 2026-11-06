@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: Plain washer (ISO 7089)",
+    "familyId": "washer",
+    "params": {
+      "size": "M8",
+      "d1": 8.4,
+      "d2": 16,
+      "h": 1.6,
+      "material": "S235 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-31T00:00:00.000Z",
+    "updatedAt": "2026-10-31T00:00:00.000Z"
+  }
+}

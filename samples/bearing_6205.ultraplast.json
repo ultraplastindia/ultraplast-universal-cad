@@ -1,0 +1,19 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: 6205 bearing",
+    "familyId": "bearing",
+    "params": {
+      "designation": "6205",
+      "d": 25,
+      "D": 52,
+      "B": 15,
+      "material": "Chrome Steel 100Cr6"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-30T00:00:00.000Z",
+    "updatedAt": "2026-10-30T00:00:00.000Z"
+  }
+}

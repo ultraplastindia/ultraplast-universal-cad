@@ -1,0 +1,23 @@
+{
+  "format": "ultraplast-project",
+  "version": 1,
+  "project": {
+    "id": "sample",
+    "name": "Sample: stepped drive shaft",
+    "familyId": "shaft",
+    "params": {
+      "d1": 25,
+      "l1": 120,
+      "d2": 30,
+      "l2": 60,
+      "d3": 25,
+      "l3": 120,
+      "torque": 80,
+      "sf": 3,
+      "material": "C45 Steel"
+    },
+    "revision": "A",
+    "createdAt": "2026-10-30T00:00:00.000Z",
+    "updatedAt": "2026-10-30T00:00:00.000Z"
+  }
+}
