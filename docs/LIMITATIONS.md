@@ -19,3 +19,7 @@
 - **Custom components** are plain extruded or turned shapes: no bends, chamfers, threads, keyways or tolerances. Calculations are limited to geometry and mass.
 - **Image to 3D** uses one picture, so it recovers only the outline (and visible round holes or cut-outs). Accuracy depends on the picture (straight-on, plain background, no shadows) and on the one real measurement you enter. Always verify the size and shape against the real part.
 - **Cloud database:** there is no "forgot password" email yet; reference tables stored in the database are a copy, the app's calculations still use the built-in tables.
+
+## v0.5 additions: limits to know
+- **Sprocket (all types):** tooth plates are the ISO 606 form; hubs, bush flanges and bolt holes are simple cylinders. Taper bores for bush or QD fittings, splines, set screws, and the two halves of a split sprocket are not modelled (split is shown as a line only). Strand distance defaults are standard transverse pitch values: confirm with your chain maker.
+- **Value-based component types** (for example belts, motors, gearboxes, chains) are generic blocks or turned shapes with starting sizes, not real models of those products. Use them for envelopes, simple parts and quick drawings.

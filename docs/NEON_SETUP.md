@@ -6,6 +6,7 @@ This turns on **accounts and cloud saving**. Until you finish these steps the we
 - Sign in with your own email and password (Account page).
 - Saved designs, assemblies, custom parts and Image-to-3D parts are stored in the Neon database and open on any computer.
 - Pictures uploaded on the Image to 3D page are stored with your account.
+- The **Component types** library (every kind of conveyor component) can be stored in the database. The administrator opens **Component types**, presses *Store all built-in types in the database*, and can then add or edit types (name, category, base component and starting values) without any code change.
 - The first account that is created becomes the **administrator**. The administrator can store a copy of the catalogue, materials, chain, bearing, key and component tables in the database (Account page).
 
 ## Step 1. Create the Neon database
@@ -40,6 +41,7 @@ Alternative: in Vercel you can use **Storage > Neon** to connect the database. I
 2. Open any component, enter values and press **Save design**. Open **Saved designs**: it should be listed. Sign in on another computer: the same design appears.
 3. On the Account page, if it shows designs from this browser, press **Copy them to my account**.
 4. As administrator press **Store / refresh tables in the database**. In Neon (Tables > `reference_data`) you will see rows named `catalogue`, `materials`, `chains`, `bearings`, `keys`, `components`.
+5. As administrator open **Component types** and press **Store all built-in types in the database**. In Neon the table `component_types` now has all types. Try **Add a new type**, then check that it shows on the page.
 
 ## If something does not work
 - Account page says "Working in browser-only mode": `DATABASE_URL` or `AUTH_SECRET` is missing or too short, or the site was not redeployed after adding them.

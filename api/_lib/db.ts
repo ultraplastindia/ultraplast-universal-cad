@@ -21,6 +21,7 @@ export function ensureSchema(): Promise<void> {
     await q`CREATE TABLE IF NOT EXISTS uploads (id text PRIMARY KEY, owner_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, name text NOT NULL, mime text NOT NULL, data text NOT NULL, design_id text, created_at timestamptz NOT NULL DEFAULT now())`;
     await q`CREATE INDEX IF NOT EXISTS uploads_owner_idx ON uploads (owner_id, created_at DESC)`;
     await q`CREATE TABLE IF NOT EXISTS reference_data (key text PRIMARY KEY, data jsonb NOT NULL, updated_by uuid, updated_at timestamptz NOT NULL DEFAULT now())`;
+    await q`CREATE TABLE IF NOT EXISTS component_types (id text PRIMARY KEY, name text NOT NULL, category text NOT NULL, base text NOT NULL, kind text NOT NULL DEFAULT 'value', params jsonb NOT NULL DEFAULT '{}'::jsonb, note text NOT NULL DEFAULT '', builtin boolean NOT NULL DEFAULT false, updated_by uuid, updated_at timestamptz NOT NULL DEFAULT now())`;
     await q`CREATE TABLE IF NOT EXISTS auth_attempts (email text NOT NULL, at timestamptz NOT NULL DEFAULT now())`;
     await q`CREATE INDEX IF NOT EXISTS auth_attempts_idx ON auth_attempts (email, at DESC)`;
   })().catch((e) => { ready = null; throw e; });

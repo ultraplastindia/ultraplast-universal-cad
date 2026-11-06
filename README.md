@@ -76,3 +76,8 @@ Not needed today: saving works in the browser. A database only becomes useful if
 - **Image to 3D:** menu *Image to 3D*. Upload a picture, the outline is traced in your browser, you enter one real size and a thickness, and it creates a *Custom outline part*. One picture gives an extruded outline only (no depth detail). Always check it against the real part.
 - **Neon cloud database and accounts:** sign in on the *Account* page to save designs, assemblies, custom parts and pictures in Neon. Setup is in `docs/NEON_SETUP.md`. Without the setup the site works as before, saving in the browser.
 - New files: `api/` (server functions), `db/schema.sql`, `src/cloud/`, `src/families/custom/`, `src/lib/trace.ts`, `src/pages/ImagePage.tsx`, `src/pages/AccountPage.tsx`, `tests/custom.test.ts`, `.env.example`. The earlier "Optional cloud database" section above is now implemented.
+
+## What is new in v0.5
+- **Sprocket (all types)** family: one value-driven sprocket for single, duplex, triplex, multi-strand, double single, bush, QD, steel split, drive, drum, industrial and shaft-style sprockets (number of strands, distance between strands, hub on one or both sides, flange bolt holes, split). The old single-strand *Roller chain sprocket* is unchanged.
+- **Component types** page (`#/types`): a library with one type for every catalogue item (125) plus the 12 sprocket styles. Each opens the designer with starting values. Items without their own engineering model start from a generic value-based block or turned part. The administrator can add or edit types; they are stored in the Neon table `component_types`.
+- Server function `api/types.ts`; tests in `tests/types.test.ts`.

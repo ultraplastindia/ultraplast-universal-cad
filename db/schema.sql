@@ -42,6 +42,19 @@ CREATE TABLE IF NOT EXISTS reference_data ( -- copy of the built-in catalogue, m
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS component_types ( -- the component type library (Component types page); the administrator can add or change types
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  category text NOT NULL,
+  base text NOT NULL,                   -- which family or tool creates it (for example sprocket_types, custom_block, assembly)
+  kind text NOT NULL DEFAULT 'value',   -- dedicated | value | assembly
+  params jsonb NOT NULL DEFAULT '{}'::jsonb, -- the starting values
+  note text NOT NULL DEFAULT '',
+  builtin boolean NOT NULL DEFAULT false,
+  updated_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS auth_attempts ( -- failed sign-in attempts (slows down password guessing)
   email text NOT NULL,
   at timestamptz NOT NULL DEFAULT now()
