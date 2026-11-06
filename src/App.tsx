@@ -9,11 +9,12 @@ import { DesignerPage } from './pages/DesignerPage.tsx';
 import { SavedPage } from './pages/SavedPage.tsx';
 import { AboutPage, CoveragePage, HelpPage } from './pages/InfoPages.tsx';
 import { AssemblyPage } from './pages/AssemblyPage.tsx';
+import { TypesPage } from './pages/TypesPage.tsx';
 import { ImagePage } from './pages/ImagePage.tsx';
 import { AccountPage } from './pages/AccountPage.tsx';
 import { authReady, useAuth } from './cloud/client.ts';
 
-const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
+const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
 
 export default function App() {
   const r = useRoute();
@@ -41,6 +42,7 @@ export default function App() {
         {page === 'designer' && <DesignerPage key={key} familyId={r.path[1]} query={r.query} />}
         {page === 'assembly' && <AssemblyPage />}
         {page === 'image' && <ImagePage />}
+        {page === 'types' && <TypesPage />}
         {page === 'account' && <AccountPage />}
         {page === 'saved' && <SavedPage />}
         {page === 'coverage' && <CoveragePage />}

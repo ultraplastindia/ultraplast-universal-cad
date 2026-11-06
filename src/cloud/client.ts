@@ -68,3 +68,9 @@ export async function deleteUpload(id: string): Promise<void> { await call(`/api
 /* ---------- reference tables (administrator) ---------- */
 export async function listReference(): Promise<{ key: string; updatedAt: string }[]> { return (await call<{ items: { key: string; updatedAt: string }[] }>('/api/reference')).items; }
 export async function putReference(key: string, data: unknown): Promise<void> { await call('/api/reference', { method: 'PUT', body: JSON.stringify({ key, data }) }); }
+
+/* ---------- component type library ---------- */
+export interface TypeRow { id: string; name: string; category: string; base: string; kind: 'dedicated' | 'value' | 'assembly'; params: Record<string, string | number | boolean>; note: string; builtin: boolean }
+export async function listTypes(): Promise<TypeRow[]> { return (await call<{ items: TypeRow[] }>('/api/types')).items; }
+export async function putTypes(types: TypeRow[]): Promise<void> { await call('/api/types', { method: 'PUT', body: JSON.stringify({ types }) }); }
+export async function deleteType(id: string): Promise<void> { await call(`/api/types?id=${encodeURIComponent(id)}`, { method: 'DELETE' }); }

@@ -34,6 +34,10 @@ export function DesignerPage({ familyId, query }: { familyId: string | undefined
     pushRecent(family.id);
     const pid = query.get('project'), vid = query.get('variant');
     if (pid) getProject(pid).then((p) => { if (p && p.familyId === family.id) { setParams(p.params); setRev(p.revision); setProjectId(p.id); setName(p.name); } else setMsg('Saved design not found.'); }).catch(() => setMsg('Could not read local storage.'));
+    else if (query.get('preset')) {
+      // starting values handed over by the Component types page
+      try { const d = JSON.parse(sessionStorage.getItem('ultraplast.preset') ?? 'null'); if (d && d.familyId === family.id && d.params) { setParams({ ...family.defaults, ...d.params }); if (d.name) setName(String(d.name).slice(0, 120)); } } catch { /* no preset available */ }
+    }
     else if (vid) { const v = family.variants.find((x) => x.id === vid); if (v) setParams({ ...v.params }); }
   }, [family, query]);
 
