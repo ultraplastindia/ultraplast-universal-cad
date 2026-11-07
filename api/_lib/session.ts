@@ -10,6 +10,6 @@ export async function currentUser(req: Req): Promise<SessionUser | null> {
   const token = cookieValue(header(req, 'cookie'));
   const id = token ? readToken(token, secret()) : null;
   if (!id) return null;
-  const rows = (await sql()`SELECT id, email, name, is_admin, disabled FROM users WHERE id = ${id}`) as { id: string; email: string; name: string; is_admin: boolean; disabled: boolean }[];
-  return rows[0] && !rows[0].disabled ? { id: rows[0].id, email: rows[0].email, name: rows[0].name, isAdmin: rows[0].is_admin } : null;
+  const rows = (await sql()`SELECT id, email, name, is_admin, disabled, approved FROM users WHERE id = ${id}`) as { id: string; email: string; name: string; is_admin: boolean; disabled: boolean; approved: boolean }[];
+  return rows[0] && !rows[0].disabled && rows[0].approved ? { id: rows[0].id, email: rows[0].email, name: rows[0].name, isAdmin: rows[0].is_admin } : null;
 }

@@ -38,8 +38,9 @@ export default async function handler(req: Req, res: Res): Promise<void> {
       if (exists.length) { fail(res, 409, 'An account with this email already exists. Sign in instead.'); return; }
       const codes = await needOtp();
       // the very first account becomes the administrator; it can sign up without a code because mail cannot be set up before an administrator exists
-      const rows = (await q`INSERT INTO users (email, name, password_hash, is_admin, email_verified) VALUES (${email}, ${name}, ${hashPassword(password)}, NOT EXISTS (SELECT 1 FROM users), ${!codes}) RETURNING id, email, name, is_admin`) as Row[];
+      const rows = (await q`INSERT INTO users (email, name, password_hash, is_admin, email_verified, approved) VALUES (${email}, ${name}, ${hashPassword(password)}, NOT EXISTS (SELECT 1 FROM users), ${!codes}, NOT EXISTS (SELECT 1 FROM users)) RETURNING id, email, name, is_admin, approved`) as (Row & { approved: boolean })[];
       if (codes) { await issueOtp(email, 'signup'); send(res, 200, { step: 'otp', purpose: 'signup', email }); return; }
+      if (!rows[0].approved) { send(res, 200, { step: 'pending', email }); return; } // access request sent: the administrator must approve it first
       res.setHeader('Set-Cookie', sessionCookie(makeToken(rows[0].id, secret())));
       send(res, 200, { user: pub(rows[0]) });
       return;
@@ -48,7 +49,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     if (action === 'login') {
       const recent = (await q`SELECT count(*)::int AS n FROM auth_attempts WHERE email = ${email} AND at > now() - interval '15 minutes'`) as { n: number }[];
       if ((recent[0]?.n ?? 0) >= 8) { fail(res, 429, 'Too many failed attempts. Wait 15 minutes and try again.'); return; }
-      const rows = (await q`SELECT id, email, name, is_admin, password_hash, email_verified, disabled FROM users WHERE email = ${email}`) as (Row & { password_hash: string; email_verified: boolean; disabled: boolean })[];
+      const rows = (await q`SELECT id, email, name, is_admin, password_hash, email_verified, disabled, approved FROM users WHERE email = ${email}`) as (Row & { password_hash: string; email_verified: boolean; disabled: boolean; approved: boolean })[];
       const u = rows[0];
       if (!u || !verifyPassword(password, u.password_hash)) {
         await q`INSERT INTO auth_attempts (email) VALUES (${email})`;
@@ -56,6 +57,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
       }
       if (u.disabled) { fail(res, 403, 'This account is disabled. Ask the administrator.'); return; }
       await q`DELETE FROM auth_attempts WHERE email = ${email}`;
+      if (!u.approved) { fail(res, 403, 'Your access request is waiting for the administrator to approve it. You will be able to sign in after that.'); return; }
       if (await needOtp()) {
         const purpose = u.email_verified ? 'login' : 'signup';
         await issueOtp(email, purpose); send(res, 200, { step: 'otp', purpose, email }); return;
@@ -70,8 +72,9 @@ export default async function handler(req: Req, res: Res): Promise<void> {
       const recent = (await q`SELECT count(*)::int AS n FROM auth_attempts WHERE email = ${'otp:' + email} AND at > now() - interval '15 minutes'`) as { n: number }[];
       if ((recent[0]?.n ?? 0) >= 10) { fail(res, 429, 'Too many wrong codes. Wait 15 minutes.'); return; }
       if (!(await checkOtp(email, purpose, String(b.code ?? '').trim()))) { await q`INSERT INTO auth_attempts (email) VALUES (${'otp:' + email})`; fail(res, 401, 'The code is wrong or has expired. Ask for a new code.'); return; }
-      const rows = (await q`UPDATE users SET email_verified = true WHERE email = ${email} AND NOT disabled RETURNING id, email, name, is_admin`) as Row[];
+      const rows = (await q`UPDATE users SET email_verified = true WHERE email = ${email} AND NOT disabled RETURNING id, email, name, is_admin, approved`) as (Row & { approved: boolean })[];
       if (!rows[0]) { fail(res, 403, 'This account is not available.'); return; }
+      if (!rows[0].approved) { send(res, 200, { step: 'pending', email }); return; }
       res.setHeader('Set-Cookie', sessionCookie(makeToken(rows[0].id, secret())));
       send(res, 200, { user: pub(rows[0]) });
       return;

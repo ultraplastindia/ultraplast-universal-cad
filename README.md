@@ -95,3 +95,10 @@ Not needed today: saving works in the browser. A database only becomes useful if
 2. Gmail: Google Account > Security > turn on 2-Step Verification > App passwords > create one. Press "Use Gmail settings", enter your Gmail address and the 16-character app password, **Save**, then **Send test** and check your inbox. Only then tick "Send email codes" and Save again.
 3. **Settings > AI services:** paste the key of any AI you have, tick "Use this AI", Save, press "Test saved key". Add more at any time; the Image to 3D page uses whichever are switched on (preferred first, the next one if one fails).
 4. Open **Image to 3D** and try each tab.
+
+### v0.6.1: sign-in first, access by approval
+- When the cloud database is connected, the site shows **only the sign-in page** until the person is signed in. Nothing else (components, designer, saved designs) is visible before that.
+- A new person presses **Request access**, enters name, email and password (and the email code if email is on). They see "Access request sent" and **cannot sign in until the administrator approves** them.
+- The administrator opens **Settings > Users**: waiting requests are marked "Waiting for approval" with **Approve** or **Reject**.
+- The very first account becomes the administrator and is approved automatically. Everyone who already had an account stays approved.
+- Without the cloud database (browser-only mode) there is no server to check anyone, so the site stays open as before.

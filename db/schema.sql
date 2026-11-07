@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- added in v0.6 (email codes, settings, AI): extra columns and tables
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified boolean NOT NULL DEFAULT true;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS approved boolean NOT NULL DEFAULT true;  -- new sign-ups start as false until the administrator approves
 ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS settings (        -- administrator settings; secrets (API keys, mail password) are stored encrypted
   key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()

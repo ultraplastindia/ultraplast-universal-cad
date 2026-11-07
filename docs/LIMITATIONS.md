@@ -35,3 +35,4 @@
 - **Locked out?** If email stops working and you cannot receive codes, switch email off in Neon: `UPDATE settings SET value = jsonb_set(value, '{enabled}', 'false') WHERE key = 'mail';` (SQL editor). Keep at least one administrator you can reach.
 - Changing `AUTH_SECRET` makes the saved mail password and AI keys unreadable: enter them again in Settings.
 - Settings is hidden from non-administrators and also refused by the server for them.
+- **Access approval** needs the cloud database. In browser-only mode (no Neon) nobody can be blocked, because everything runs in the visitor's own browser. The administrator is not emailed about new requests; check Settings > Users.
