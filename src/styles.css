@@ -99,3 +99,35 @@ input[type=range]{width:100%}
 .typecard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}.typecard p{margin:2px 0 6px;font-size:13px;color:#4a5668;flex:1}
 .tc-top{display:flex;justify-content:space-between;align-items:center}
 .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:#eef2f7;color:#35506f}.badge.dedicated{background:#e3f1e6;color:#1f5d2e}.badge.assembly{background:#fff1d6;color:#7a4b00}
+
+/* ===== sign-in page (v0.6.2) ===== */
+.authpage{min-height:100vh;display:grid;grid-template-columns:minmax(340px,5fr) 6fr;background:var(--bg)}
+.auth-brand{position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:44px 48px;background:radial-gradient(900px 420px at 90% -10%,#2a6bd066,transparent),linear-gradient(150deg,var(--navy) 0%,#0e2a52 55%,#17437c 100%)}
+.auth-brand:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff0d 1px,transparent 1px),linear-gradient(90deg,#ffffff0d 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(160deg,#000,transparent 85%)}
+.auth-brand:after{content:"";position:absolute;right:-120px;bottom:-120px;width:380px;height:380px;border-radius:50%;border:48px solid #ffffff0d;box-shadow:0 0 0 46px #ffffff08}
+.auth-brand-in,.auth-brand small{position:relative;z-index:1}
+.auth-brand .logo-box{background:#fff;border-radius:12px;padding:8px 16px;display:inline-flex;box-shadow:0 8px 26px #00000040}
+.auth-brand h1{font-size:36px;font-weight:800;margin:34px 0 14px;line-height:1.1}
+.auth-brand h1 span{display:block;margin-top:12px;font-size:16px;font-weight:500;color:#c9d8ee;max-width:430px;line-height:1.45}
+.auth-brand ul{list-style:none;margin:30px 0 0;padding:0;display:grid;gap:14px;max-width:440px}
+.auth-brand li{position:relative;padding-left:34px;color:#d7e3f5;line-height:1.4}
+.auth-brand li:before{content:"";position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:7px;background:var(--amber) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%231b1300' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+.auth-brand li b{color:#fff}
+.auth-brand small{color:#9db6d6;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px}
+.auth-main{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 24px;gap:18px}
+.auth-card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 4px #0a1f3d10,0 24px 60px #0a1f3d1f;padding:34px 34px 28px;border-top:4px solid var(--amber)}
+.auth-card h2{margin:0;font-size:26px;color:var(--navy)}
+.auth-sub{margin:6px 0 22px;color:var(--mut)}
+.authform .modebar{margin:0 0 18px;border-radius:12px;padding:3px;background:#eef3f9;gap:3px;border:1px solid var(--line)}
+.authform .modebar button{border-radius:9px;padding:9px 6px;background:transparent;font-size:13.5px}
+.authform .modebar button.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px #0a1f3d22}
+.authform .field{display:grid;gap:6px;margin:0 0 15px}
+.authform .field>span{font-weight:600;font-size:13px;color:#2c3a4d}.authform .field em{font-weight:400;color:var(--mut);font-style:normal;font-size:12px}
+.authform .field input{padding:12px 14px;border-radius:10px;border:1px solid #c3cdd9;background:#fbfcfe;font-size:15px}
+.authform .field input:focus{background:#fff;box-shadow:0 0 0 4px #1565c01f}
+.authform .actions{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
+button.primary.wide{flex:1;padding:12px 16px;font-size:15px;border-radius:10px;box-shadow:0 6px 16px #1565c04d}
+.authform p{margin:14px 0 0;font-size:13px}.authform .box{margin:0 0 14px}
+.auth-foot{margin:0;color:var(--mut);font-size:12px;text-align:center;max-width:440px}
+.auth-done{display:flex;gap:14px;align-items:flex-start;background:#f4faf6;border:1px solid #cfe9d8;border-radius:12px;padding:16px;margin-bottom:18px}.auth-done svg{flex:none}.auth-done p{margin:0;color:#24402f}
+@media (max-width:860px){.authpage{grid-template-columns:1fr}.auth-brand{padding:26px 24px 30px}.auth-brand h1{font-size:26px;margin-top:20px}.auth-brand ul,.auth-brand small{display:none}.auth-main{padding:24px 16px 36px}.auth-card{padding:26px 22px}}
