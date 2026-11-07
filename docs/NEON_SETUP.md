@@ -53,3 +53,10 @@ Alternative: in Vercel you can use **Storage > Neon** to connect the database. I
 - Each person can read only their own designs. The database address and secret exist only in Vercel.
 - Logging out clears the cookie on that computer. A stolen cookie stays valid until it expires (30 days); if you suspect this, change `AUTH_SECRET` in Vercel and redeploy: everyone is signed out.
 - There is no "forgot password" email yet. The administrator can reset an account by deleting the user row in Neon so the person can register again (their designs are deleted with the row).
+
+## v0.6: email codes, Settings and AI (after the steps above)
+No new Vercel environment variables are needed. After you redeploy v0.6:
+1. Sign in (the first account is the administrator). A **Settings** tab appears for you only.
+2. Email codes: see "Setup" in the README (Gmail app password). The mail password is saved encrypted in your Neon database using `AUTH_SECRET`.
+3. AI keys: Settings > AI services. Get a key from the AI company's website (they bill you directly). Nothing is shared with anyone else.
+4. If you ever change `AUTH_SECRET`, enter the mail password and AI keys again.

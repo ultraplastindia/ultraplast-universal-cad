@@ -12,6 +12,21 @@ CREATE TABLE IF NOT EXISTS users (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- added in v0.6 (email codes, settings, AI): extra columns and tables
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified boolean NOT NULL DEFAULT true;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled boolean NOT NULL DEFAULT false;
+CREATE TABLE IF NOT EXISTS settings (        -- administrator settings; secrets (API keys, mail password) are stored encrypted
+  key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS otp_codes (       -- one-time email codes (only a hash is stored)
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text NOT NULL, purpose text NOT NULL, code_hash text NOT NULL,
+  attempts int NOT NULL DEFAULT 0, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS otp_codes_idx ON otp_codes (email, purpose, created_at DESC);
+CREATE TABLE IF NOT EXISTS ai_usage (        -- AI calls per user per day (daily limit)
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, day date NOT NULL DEFAULT current_date, n int NOT NULL DEFAULT 0, PRIMARY KEY (user_id, day)
+);
+
 CREATE TABLE IF NOT EXISTS designs (      -- saved designs ('project') and assemblies ('assembly'), including custom and image-made parts
   id text PRIMARY KEY,
   owner_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -23,3 +23,15 @@
 ## v0.5 additions: limits to know
 - **Sprocket (all types):** tooth plates are the ISO 606 form; hubs, bush flanges and bolt holes are simple cylinders. Taper bores for bush or QD fittings, splines, set screws, and the two halves of a split sprocket are not modelled (split is shown as a line only). Strand distance defaults are standard transverse pitch values: confirm with your chain maker.
 - **Value-based component types** (for example belts, motors, gearboxes, chains) are generic blocks or turned shapes with starting sizes, not real models of those products. Use them for envelopes, simple parts and quick drawings.
+
+## v0.6 additions: limits to know
+- **A picture cannot give an exact size.** You always type one real measurement and everything is scaled from it. Perspective, lens distortion and shadows change the result: take the photo straight on, from far away (zoom in) rather than close up.
+- **Turned part** reads the thickness along the part, so it assumes the part is round and symmetrical. Bores, keyways, threads, chamfers and grooves smaller than a few percent of the length are not seen; type them in the designer.
+- **Stepped block** reads width and height from a front photo. Depth cannot be seen: you give it. Blocks are centred on each other.
+- **AI recognise** gives relative proportions and a guess of the type and material. It can be wrong. The real size is always your typed measurement. Results are checked (limits, valid shapes) before use, and anything outside the limits is dropped.
+- **AI 3D mesh** (Stability, Meshy) makes a triangle mesh you can view from every angle and download as GLB or STL. It is **not** parametric CAD: there are no editable values, no drawing and no mass. Size is scaled from the one measurement you type. Quality depends on the picture and the AI service.
+- **AI costs money and is metered by the AI company**, not by this app. The per-person daily limit in Settings limits your cost. Model names (for example `claude-sonnet-5-5`, `gpt-4o`, `gemini-2.5-flash`) are editable in Settings because providers rename models; if a test fails with "model not found", change the model name.
+- **Email codes** use your own Gmail or Outlook account. Gmail needs 2-step verification and an app password. Microsoft has been switching off basic (password) SMTP for many Outlook accounts; if the test email fails, use Gmail or a company SMTP server. Free mail accounts have daily sending limits.
+- **Locked out?** If email stops working and you cannot receive codes, switch email off in Neon: `UPDATE settings SET value = jsonb_set(value, '{enabled}', 'false') WHERE key = 'mail';` (SQL editor). Keep at least one administrator you can reach.
+- Changing `AUTH_SECRET` makes the saved mail password and AI keys unreadable: enter them again in Settings.
+- Settings is hidden from non-administrators and also refused by the server for them.

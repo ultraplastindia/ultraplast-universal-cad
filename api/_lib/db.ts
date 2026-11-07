@@ -16,6 +16,12 @@ export function ensureSchema(): Promise<void> {
   ready ??= (async () => {
     const q = sql();
     await q`CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text UNIQUE NOT NULL, name text NOT NULL DEFAULT '', password_hash text NOT NULL, is_admin boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now())`;
+    await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified boolean NOT NULL DEFAULT true`;
+    await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled boolean NOT NULL DEFAULT false`;
+    await q`CREATE TABLE IF NOT EXISTS settings (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`;
+    await q`CREATE TABLE IF NOT EXISTS otp_codes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text NOT NULL, purpose text NOT NULL, code_hash text NOT NULL, attempts int NOT NULL DEFAULT 0, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`;
+    await q`CREATE INDEX IF NOT EXISTS otp_codes_idx ON otp_codes (email, purpose, created_at DESC)`;
+    await q`CREATE TABLE IF NOT EXISTS ai_usage (user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, day date NOT NULL DEFAULT current_date, n int NOT NULL DEFAULT 0, PRIMARY KEY (user_id, day))`;
     await q`CREATE TABLE IF NOT EXISTS designs (id text PRIMARY KEY, owner_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, kind text NOT NULL CHECK (kind IN ('project','assembly')), name text NOT NULL, family_id text, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())`;
     await q`CREATE INDEX IF NOT EXISTS designs_owner_idx ON designs (owner_id, kind, updated_at DESC)`;
     await q`CREATE TABLE IF NOT EXISTS uploads (id text PRIMARY KEY, owner_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, name text NOT NULL, mime text NOT NULL, data text NOT NULL, design_id text, created_at timestamptz NOT NULL DEFAULT now())`;

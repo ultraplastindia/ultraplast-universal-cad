@@ -81,3 +81,17 @@ Not needed today: saving works in the browser. A database only becomes useful if
 - **Sprocket (all types)** family: one value-driven sprocket for single, duplex, triplex, multi-strand, double single, bush, QD, steel split, drive, drum, industrial and shaft-style sprockets (number of strands, distance between strands, hub on one or both sides, flange bolt holes, split). The old single-strand *Roller chain sprocket* is unchanged.
 - **Component types** page (`#/types`): a library with one type for every catalogue item (125) plus the 12 sprocket styles. Each opens the designer with starting values. Items without their own engineering model start from a generic value-based block or turned part. The administrator can add or edit types; they are stored in the Neon table `component_types`.
 - Server function `api/types.ts`; tests in `tests/types.test.ts`.
+
+## What is new in v0.6
+- **Login with email code (OTP):** when email is set up (Settings > Email), sign-up and every sign-in need a 6-digit code mailed to the person (valid 10 minutes, one use, 5 tries). Forgot-password by email code. Nothing changes until an administrator switches email on, so the site keeps working the way it did.
+- **Settings page (administrator only):** users (make/remove admin, disable, set password, delete), Email (SMTP) with test, Security (code at every sign-in), AI services (a separate key, model and on/off for Anthropic, OpenAI, Gemini, Stability and Meshy; a daily limit per person). Keys and the mail password are stored **encrypted** in the database and are never sent back to the browser.
+- **Image to 3D has four tabs:** Flat outline (as before), **Turned part** (shafts, rollers, bushes), **Stepped block**, and **AI helper** (recognise the part, or build a 3D mesh). Every value can be edited afterwards in the designer.
+- **New component types:** *Custom turned part* (up to 12 steps) and *Custom stepped block*.
+- **3D viewer:** Front, Back, Left, Right, Top, Bottom and Isometric views everywhere.
+- New environment variables: **none**. New database tables/columns are created automatically (`db/schema.sql` shows them). New package: `nodemailer`.
+
+### Setup (after uploading v0.6 to GitHub and redeploying)
+1. Open the site, sign in as the administrator, open **Settings > Email**.
+2. Gmail: Google Account > Security > turn on 2-Step Verification > App passwords > create one. Press "Use Gmail settings", enter your Gmail address and the 16-character app password, **Save**, then **Send test** and check your inbox. Only then tick "Send email codes" and Save again.
+3. **Settings > AI services:** paste the key of any AI you have, tick "Use this AI", Save, press "Test saved key". Add more at any time; the Image to 3D page uses whichever are switched on (preferred first, the next one if one fails).
+4. Open **Image to 3D** and try each tab.

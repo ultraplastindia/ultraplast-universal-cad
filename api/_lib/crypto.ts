@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
 
 /** Password hashing (scrypt) and signed login tokens. Uses only Node's built-in crypto, so there is nothing extra to install. */
 const N = 16384;
@@ -39,3 +39,25 @@ export const cookieValue = (cookieHeader: string, name = COOKIE): string => {
 };
 export const sessionCookie = (token: string | null, days = 30): string =>
   `${COOKIE}=${token ? encodeURIComponent(token) : ''}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${token ? days * 86400 : 0}`;
+
+/* ---------- secrets stored in the database (API keys, mail password) ---------- */
+/** AES-256-GCM. The key is derived from AUTH_SECRET, so changing AUTH_SECRET makes stored secrets unreadable (enter them again). */
+export function encryptSecret(plain: string, secret: string): string {
+  const key = scryptSync(secret, 'ucd-settings-v1', 32), iv = randomBytes(12), c = createCipheriv('aes-256-gcm', key, iv);
+  const ct = Buffer.concat([c.update(plain, 'utf8'), c.final()]);
+  return `v1.${Buffer.concat([iv, c.getAuthTag(), ct]).toString('base64url')}`;
+}
+export function decryptSecret(stored: string, secret: string): string | null {
+  try {
+    if (!stored.startsWith('v1.')) return null;
+    const raw = Buffer.from(stored.slice(3), 'base64url'), key = scryptSync(secret, 'ucd-settings-v1', 32);
+    const d = createDecipheriv('aes-256-gcm', key, raw.subarray(0, 12)); d.setAuthTag(raw.subarray(12, 28));
+    return Buffer.concat([d.update(raw.subarray(28)), d.final()]).toString('utf8');
+  } catch { return null; }
+}
+
+/* ---------- one-time email codes ---------- */
+export const newOtp = (): string => String(randomInt(0, 1_000_000)).padStart(6, '0');
+/** Codes are stored only as an HMAC (bound to the email and purpose), never in clear text. */
+export const otpHash = (code: string, email: string, purpose: string, secret: string): string => createHmac('sha256', secret).update(`${purpose}|${email}|${code}`).digest('hex');
+export function sameHash(a: string, b: string): boolean { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); }
