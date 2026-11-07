@@ -105,3 +105,6 @@ Not needed today: saving works in the browser. A database only becomes useful if
 
 ### v0.6.2: professional sign-in page
 The sign-in / request-access page now has a full-screen layout (company panel + form card, works on phones). Put the real logo at `public/assets/Logo.png`: it then appears on this page, the header, the footer, drawings and PDFs automatically.
+
+### v0.6.4: new logo
+Updated `public/assets/Logo.png` to the new logo. A step-by-step sign-in guide is in `docs/LOGIN_GUIDE.md`.
