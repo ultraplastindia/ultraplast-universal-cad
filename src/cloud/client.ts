@@ -3,9 +3,9 @@ import { useSyncExternalStore } from 'react';
 /** Browser side of the Neon cloud database. If the website has no database set up (or you run it locally with `npm run dev`),
  *  `configured` stays false and the app keeps using the browser storage exactly as before. */
 export interface CloudUser { id: string; email: string; name: string; isAdmin: boolean }
-export interface AuthState { ready: boolean; configured: boolean; user: CloudUser | null }
+export interface AuthState { ready: boolean; configured: boolean; user: CloudUser | null; emailCodes: boolean }
 
-let state: AuthState = { ready: false, configured: false, user: null };
+let state: AuthState = { ready: false, configured: false, user: null, emailCodes: false };
 const listeners = new Set<() => void>();
 const set = (s: Partial<AuthState>) => { state = { ...state, ...s }; listeners.forEach((l) => l()); };
 export const useAuth = (): AuthState => useSyncExternalStore((cb) => { listeners.add(cb); return () => { listeners.delete(cb); }; }, () => state);
@@ -24,18 +24,23 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 let first: Promise<void> | null = null;
 /** Asks the server who is signed in (once at start-up; call refreshAuth() to ask again). */
 export function refreshAuth(): Promise<void> {
-  return call<{ configured: boolean; user: CloudUser | null }>('/api/account').then((j) => set({ ready: true, configured: j.configured, user: j.user }), () => set({ ready: true, configured: false, user: null }));
+  return call<{ configured: boolean; user: CloudUser | null; emailCodes?: boolean }>('/api/account').then((j) => set({ ready: true, configured: j.configured, user: j.user, emailCodes: !!j.emailCodes }), () => set({ ready: true, configured: false, user: null, emailCodes: false }));
 }
 export const authReady = (): Promise<void> => (first ??= refreshAuth());
 
-export async function register(email: string, password: string, name: string, code: string): Promise<void> {
-  const j = await call<{ user: CloudUser }>('/api/account', { method: 'POST', body: JSON.stringify({ action: 'register', email, password, name, code }) });
-  set({ user: j.user });
-}
-export async function login(email: string, password: string): Promise<void> {
-  const j = await call<{ user: CloudUser }>('/api/account', { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) });
-  set({ user: j.user });
-}
+/** Sign-in and sign-up answer either with the user, or with step 'otp' = a 6-digit code was mailed and must be entered next. */
+export type AuthStep = { step: 'otp'; purpose: 'signup' | 'login'; email: string } | { step: 'done' };
+const account = async (body: object): Promise<AuthStep> => {
+  const j = await call<{ user?: CloudUser; step?: 'otp'; purpose?: 'signup' | 'login'; email?: string }>('/api/account', { method: 'POST', body: JSON.stringify(body) });
+  if (j.step === 'otp') return { step: 'otp', purpose: j.purpose ?? 'login', email: j.email ?? '' };
+  set({ user: j.user ?? null }); return { step: 'done' };
+};
+export const register = (email: string, password: string, name: string, code: string): Promise<AuthStep> => account({ action: 'register', email, password, name, code });
+export const login = (email: string, password: string): Promise<AuthStep> => account({ action: 'login', email, password });
+export const verifyCode = (email: string, purpose: 'signup' | 'login', code: string): Promise<AuthStep> => account({ action: 'verify', email, purpose, code });
+export const resendCode = async (email: string, purpose: 'signup' | 'login'): Promise<void> => { await call('/api/account', { method: 'POST', body: JSON.stringify({ action: 'resend', email, purpose }) }); };
+export const forgotPassword = async (email: string): Promise<void> => { await call('/api/account', { method: 'POST', body: JSON.stringify({ action: 'forgot', email }) }); };
+export const resetPassword = async (email: string, code: string, password: string): Promise<void> => { await call('/api/account', { method: 'POST', body: JSON.stringify({ action: 'reset', email, code, password }) }); };
 export async function logout(): Promise<void> {
   await call('/api/account', { method: 'POST', body: JSON.stringify({ action: 'logout' }) });
   set({ user: null });
@@ -74,3 +79,23 @@ export interface TypeRow { id: string; name: string; category: string; base: str
 export async function listTypes(): Promise<TypeRow[]> { return (await call<{ items: TypeRow[] }>('/api/types')).items; }
 export async function putTypes(types: TypeRow[]): Promise<void> { await call('/api/types', { method: 'PUT', body: JSON.stringify({ types }) }); }
 export async function deleteType(id: string): Promise<void> { await call(`/api/types?id=${encodeURIComponent(id)}`, { method: 'DELETE' }); }
+
+/* ---------- administrator settings ---------- */
+export interface AdminUser { id: string; email: string; name: string; isAdmin: boolean; disabled: boolean; verified: boolean; createdAt: string; aiToday: number }
+export interface AdminProvider { id: string; label: string; use: 'vision' | 'mesh'; help: string; enabled: boolean; model: string; hasKey: boolean; keyHint: string }
+export interface AdminOverview {
+  mail: { enabled: boolean; host: string; port: number; secure: boolean; user: string; fromName: string; fromEmail: string; hasPassword: boolean; passwordHint: string; ready: boolean };
+  security: { otpLogin: boolean };
+  ai: { preferredVision: string; preferredMesh: string; dailyLimit: number; providers: AdminProvider[] };
+  users: AdminUser[];
+}
+export const adminGet = (): Promise<AdminOverview> => call('/api/admin');
+export const adminDo = <T = AdminOverview>(action: string, body: object = {}): Promise<T> => call<T>('/api/admin', { method: 'POST', body: JSON.stringify({ action, ...body }) });
+
+/* ---------- AI helpers (keys stay on the server) ---------- */
+export interface AiStatus { vision: string[]; mesh: string[]; dailyLimit: number }
+export const aiStatus = (): Promise<AiStatus> => call('/api/ai');
+export const aiAnalyse = (mime: string, data: string): Promise<{ provider: string; analysis: import('../../api/_lib/aiShapes.ts').AiAnalysis }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'analyse', mime, data }) });
+export const aiMesh = (mime: string, data: string): Promise<{ provider: string; glb?: string; jobId?: string }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'mesh', mime, data }) });
+export const aiJob = (id: string): Promise<{ status: string; progress: number; glbUrl?: string }> => call(`/api/ai?job=${encodeURIComponent(id)}`);
+export const aiFile = (url: string): Promise<{ glb: string }> => call(`/api/ai?file=${encodeURIComponent(url)}`);

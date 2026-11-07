@@ -4,16 +4,16 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Part3D } from '../core/family.ts';
 
-type ViewName = 'iso' | 'face' | 'side' | 'top';
+type ViewName = 'iso' | 'face' | 'side' | 'top' | 'back' | 'left' | 'bottom';
 const COLORS: Record<string, string | null> = { 'Part colour': null, Steel: '#9aa3ad', Brass: '#c9a23c', 'White plastic': '#f2f2ee', Blue: '#2f6fb5', Dark: '#3a3f45' };
 
 function Rig({ cmd, size }: { cmd: { name: ViewName; n: number }; size: number }) {
   const { camera, controls } = useThree() as unknown as { camera: THREE.PerspectiveCamera; controls: { target: THREE.Vector3; update: () => void } | null };
   useEffect(() => {
     const d = size * 2.3;
-    const pos: Record<ViewName, [number, number, number]> = { face: [0, 0, d], side: [d, 0, 0], top: [0, d, 0], iso: [d * 0.7, d * 0.55, d * 0.85] };
+    const pos: Record<ViewName, [number, number, number]> = { face: [0, 0, d], side: [d, 0, 0], top: [0, d, 0], iso: [d * 0.7, d * 0.55, d * 0.85], back: [0, 0, -d], left: [-d, 0, 0], bottom: [0, -d, 0] };
     camera.position.set(...pos[cmd.name]);
-    camera.up.set(0, cmd.name === 'top' ? 0 : 1, cmd.name === 'top' ? -1 : 0);
+    camera.up.set(0, cmd.name === 'top' || cmd.name === 'bottom' ? 0 : 1, cmd.name === 'top' ? -1 : cmd.name === 'bottom' ? 1 : 0);
     camera.lookAt(0, 0, 0);
     camera.far = size * 60; camera.updateProjectionMatrix();
     if (controls) { controls.target.set(0, 0, 0); controls.update(); }
@@ -59,7 +59,7 @@ export function Viewer3D({ parts, groupOf, selectedGroup, onSelectGroup, flagged
   return (
     <div className="viewer">
       <div className="toolbar">
-        <div className="seg">{(['iso', 'face', 'side', 'top'] as ViewName[]).map((v) => <button key={v} onClick={() => setCmd({ name: v, n: Date.now() })}>{v === 'iso' ? 'Isometric' : v === 'face' ? 'Front' : v === 'side' ? 'Side' : 'Top'}</button>)}</div>
+        <div className="seg">{(['iso', 'face', 'back', 'side', 'left', 'top', 'bottom'] as ViewName[]).map((v) => <button key={v} onClick={() => setCmd({ name: v, n: Date.now() })}>{({ iso: 'Isometric', face: 'Front', back: 'Back', side: 'Right', left: 'Left', top: 'Top', bottom: 'Bottom' } as Record<ViewName, string>)[v]}</button>)}</div>
         <label className="chk"><input type="checkbox" checked={wire} onChange={(e) => setWire(e.target.checked)} /> Wireframe</label>
         <label className="chk"><input type="checkbox" checked={section} onChange={(e) => setSection(e.target.checked)} /> Section</label>
         {showExplode && <label className="chk">Explode <input type="range" min={0} max={1} step={0.02} value={explode} onChange={(e) => setExplode(parseFloat(e.target.value))} /></label>}

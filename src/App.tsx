@@ -12,6 +12,7 @@ import { AssemblyPage } from './pages/AssemblyPage.tsx';
 import { TypesPage } from './pages/TypesPage.tsx';
 import { ImagePage } from './pages/ImagePage.tsx';
 import { AccountPage } from './pages/AccountPage.tsx';
+import { SettingsPage } from './pages/SettingsPage.tsx';
 import { authReady, useAuth } from './cloud/client.ts';
 
 const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
@@ -20,7 +21,8 @@ export default function App() {
   const r = useRoute();
   const auth = useAuth();
   useEffect(() => { void authReady(); }, []);
-  const nav = NAV.map(([k, l]): [string, string] => (k === 'account' ? [k, auth.user ? auth.user.name.split(' ')[0] || 'Account' : 'Sign in'] : [k, l]));
+  const admin = !!auth.user?.isAdmin;
+  const nav = (admin ? [...NAV.slice(0, -1), ['settings', 'Settings'] as [string, string], NAV[NAV.length - 1]] : NAV).map(([k, l]): [string, string] => (k === 'account' ? [k, auth.user ? auth.user.name.split(' ')[0] || 'Account' : 'Sign in'] : [k, l]));
   const [hq, setHq] = useState('');
   useEffect(() => {
     const h = (e: KeyboardEvent) => { const t = e.target as HTMLElement | null; if (e.key === '/' && t && !['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) { e.preventDefault(); document.getElementById('global-search')?.focus(); } };
@@ -44,11 +46,12 @@ export default function App() {
         {page === 'image' && <ImagePage />}
         {page === 'types' && <TypesPage />}
         {page === 'account' && <AccountPage />}
+        {page === 'settings' && <SettingsPage />}
         {page === 'saved' && <SavedPage />}
         {page === 'coverage' && <CoveragePage />}
         {page === 'help' && <HelpPage />}
         {page === 'about' && <AboutPage />}
-        {!NAV.some(([k]) => k === page) && <div className="page"><h1>Page not found</h1><a href="#/dashboard">Back to dashboard</a></div>}
+        {!nav.some(([k]) => k === page) && page !== 'settings' && <div className="page"><h1>Page not found</h1><a href="#/dashboard">Back to dashboard</a></div>}
       </main>
       <Toaster />
       <footer><div className="foot"><Logo height={24} box /><span>Ultraplast Chainbelts Private Limited. Designs are PRELIMINARY and not validated for manufacture.</span><a href="https://www.ultraplastindia.com/" target="_blank" rel="noreferrer">ultraplastindia.com</a></div></footer>

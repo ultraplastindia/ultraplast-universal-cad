@@ -16,20 +16,20 @@ import type { Shape } from './shape.ts';
 
 export const CUSTOM_MATERIAL = 'Custom material';
 const MAT_OPTIONS = [...MATERIALS.map((m) => ({ value: m.id, label: m.id })), { value: CUSTOM_MATERIAL, label: 'Other material (enter density)' }];
-const isCustom = (p: Params): boolean => p.material === CUSTOM_MATERIAL;
-const MATERIAL_FIELDS: ParamField[] = [
+export const isCustom = (p: Params): boolean => p.material === CUSTOM_MATERIAL;
+export const MATERIAL_FIELDS: ParamField[] = [
   { key: 'material', label: 'Material', kind: 'select', options: MAT_OPTIONS },
   { key: 'density', label: 'Density of the material', unit: 'g/cm³', kind: 'number', min: 0.1, max: 25, step: 0.01, showIf: isCustom, help: 'Only used for "Other material". Steel is about 7.85, aluminium 2.7, plastics 0.9 to 1.4.' },
 ];
 /** density in kg/mm^3 and colour for the chosen material, or an error text */
-function matInfo(p: Params): { density: number; color: string; id: string } | string {
+export function matInfo(p: Params): { density: number; color: string; id: string } | string {
   if (isCustom(p)) { const d = num(p, 'density'); return Number.isFinite(d) && d >= 0.1 && d <= 25 ? { density: d * 1e-6, color: '#a9b3bd', id: CUSTOM_MATERIAL } : 'Enter a density between 0.1 and 25 g/cm³ for the other material.'; }
   const m = material(String(p.material));
   return m ? { density: m.density, color: m.color, id: m.id } : 'Unknown material.';
 }
-const V = (id: string, name: string, params: Params): Variant => ({ id, name, params });
-const f2 = (n: unknown) => String(+Number(n).toFixed(2));
-const kd = (label: string, v: number, unit = 'mm') => ({ label, value: f2(v), unit });
+export const V = (id: string, name: string, params: Params): Variant => ({ id, name, params });
+export const f2 = (n: unknown) => String(+Number(n).toFixed(2));
+export const kd = (label: string, v: number, unit = 'mm') => ({ label, value: f2(v), unit });
 
 /* ======================= 1. Custom block / plate with hole grid ======================= */
 export const BLOCK_FIELDS: ParamField[] = [
@@ -202,7 +202,7 @@ const outlineVariants: Variant[] = [
 ];
 
 const allMats = MATERIALS.map((m) => m.id);
-const base = { category: 'J', subcategory: 'Custom parts (value-based)', materials: allMats, standards: ['User-specified dimensions'], related: ['plate', 'bushing', 'shaft'] };
+export const base = { category: 'J', subcategory: 'Custom parts (value-based)', materials: allMats, standards: ['User-specified dimensions'], related: ['plate', 'bushing', 'shaft'] };
 
 export const CUSTOM_FAMILIES: Omit<Family, 'basic' | 'autofill'>[] = [
   { ...base, id: 'custom_block', name: 'Custom block / plate (enter sizes)', description: 'Any rectangular part: type length, width, thickness, an optional hole grid and the material. Drawing, 3D model, mass and all exports are created from those values.',

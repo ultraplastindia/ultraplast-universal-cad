@@ -2,8 +2,11 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { MATERIALS } from '../data/materials.ts';
 import { getFamily } from '../families/index.ts';
 import { outlineParams } from '../families/custom/custom.ts';
-import { autoThreshold, backgroundDistance, DEFAULT_TRACE, toMillimetres, traceImage } from '../lib/trace.ts';
-import type { RefDim, Raster } from '../lib/trace.ts';
+import { DEFAULT_TRACE, toMillimetres, traceImage } from '../lib/trace.ts';
+import { loadPicture } from './imageCommon.ts';
+import type { Loaded } from './imageCommon.ts';
+import { AiMode, SteppedMode, TurnedMode } from './ImageModes.tsx';
+import type { RefDim } from '../lib/trace.ts';
 import { saveProject } from '../storage/db.ts';
 import { newId } from '../storage/project.ts';
 import { listUploads, putUpload, useAuth } from '../cloud/client.ts';
@@ -12,26 +15,7 @@ import { go } from '../ui/router.ts';
 import { PageHeader } from '../ui/PageHeader.tsx';
 import { toast } from '../ui/Toast.tsx';
 
-const MAX_SIDE = 700;       // pictures are shrunk to this size before tracing (fast, and plenty for an outline)
-const MAX_FILE = 15 * 1024 * 1024;
-
-interface Loaded { raster: Raster; url: string; mime: string; base64: string; name: string; autoThr: number }
-
-async function loadPicture(file: File): Promise<Loaded> {
-  if (!file.type.startsWith('image/')) throw new Error('Please choose a picture file (JPG, PNG, WebP).');
-  if (file.size > MAX_FILE) throw new Error('The picture is larger than 15 MB. Please use a smaller one.');
-  const bmp = await createImageBitmap(file).catch(() => { throw new Error('This picture could not be opened. Try saving it as JPG or PNG.'); });
-  const k = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height)), w = Math.max(8, Math.round(bmp.width * k)), h = Math.max(8, Math.round(bmp.height * k));
-  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-  const ctx = cv.getContext('2d', { willReadFrequently: true });
-  if (!ctx) throw new Error('Your browser cannot read pictures here.');
-  ctx.drawImage(bmp, 0, 0, w, h); bmp.close();
-  const raster: Raster = { width: w, height: h, data: ctx.getImageData(0, 0, w, h).data };
-  const url = cv.toDataURL('image/webp', 0.85), mime = url.slice(5, url.indexOf(';'));
-  return { raster, url, mime, base64: url.slice(url.indexOf(',') + 1), name: file.name.replace(/\.[^.]+$/, '').slice(0, 60) || 'Picture', autoThr: autoThreshold(backgroundDistance(raster).dist) };
-}
-
-export function ImagePage() {
+function FlatMode() {
   const auth = useAuth();
   const [pic, setPic] = useState<Loaded | null>(null);
   const [thr, setThr] = useState(DEFAULT_TRACE.threshold);
@@ -80,9 +64,8 @@ export function ImagePage() {
 
   const pathD = result ? [result.outer, ...result.holes].map((l) => `M${l.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' L')} Z`).join(' ') : '';
   return (
-    <div className="page">
-      <PageHeader title="Image to 3D" subtitle="Upload a picture of a part. The app traces its outline, you give one real size, and it creates the 2D drawing and 3D model." />
-      <div className="box info"><b>How to get a good result</b>
+    <div>
+      <div className="box info"><b>Flat outline: how to get a good result</b>
         <ul>
           <li>Take the picture straight from the front or side (not at an angle), with the part lying flat on a plain, evenly lit background. A scan or a PNG with a transparent background works best.</li>
           <li>Enter <b>one real measurement</b> (for example the overall length). Everything else is scaled from it.</li>
@@ -136,6 +119,30 @@ export function ImagePage() {
           </tbody></table>
         </>
       )}
+    </div>
+  );
+}
+
+type Mode = 'flat' | 'turned' | 'stepped' | 'ai';
+const MODES: [Mode, string, string][] = [
+  ['flat', 'Flat outline', 'Plates, brackets, cut parts: the outline is traced and extruded.'],
+  ['turned', 'Turned part', 'Shafts, rollers, bushes: the stepped profile is read and revolved.'],
+  ['stepped', 'Stepped block', 'Stacked blocks from a front photo.'],
+  ['ai', 'AI helper', 'Let an AI you set up in Settings recognise the part or build a 3D mesh.'],
+];
+
+export function ImagePage() {
+  const [mode, setMode] = useState<Mode>('flat');
+  return (
+    <div className="page">
+      <PageHeader title="Image to 3D" subtitle="Upload a picture of a part, give one real size, and get the 2D drawing, 3D model (every angle), mass and exports. Every value can be edited afterwards in the designer." />
+      <div className="modebar" role="tablist">{MODES.map(([k, l]) => <button key={k} type="button" className={mode === k ? 'on' : ''} onClick={() => setMode(k)}>{l}</button>)}</div>
+      <p className="muted">{MODES.find(([k]) => k === mode)![2]}</p>
+      <div className="box warn">A photo cannot show an exact size by itself, so you always type <b>one real measurement</b> and everything is scaled from it. Check the result against the real part: it is PRELIMINARY.</div>
+      {mode === 'flat' && <FlatMode />}
+      {mode === 'turned' && <TurnedMode />}
+      {mode === 'stepped' && <SteppedMode />}
+      {mode === 'ai' && <AiMode />}
     </div>
   );
 }

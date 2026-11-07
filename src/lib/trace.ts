@@ -201,3 +201,70 @@ export function toMillimetres(t: TraceResult, ref: RefDim, mm: number): Millimet
   const s = mm / refPx, P = (p: Pt): Pt => [+((p[0] - x0) * s).toFixed(3), +((y1 - p[1]) * s).toFixed(3)];
   return { outline: t.outer.map(P), cutouts: t.holes.map((l) => l.map(P)), holes: t.round.map((q) => ({ c: P(q.c), r: +(q.r * s).toFixed(3) })), scale: s, lengthMm: wpx * s, widthMm: hpx * s };
 }
+
+/* ---------- turned parts and stepped blocks read from a silhouette ---------- */
+export interface Run { start: number; end: number; value: number } // start..end are index positions (end exclusive)
+
+/** Splits a list of widths into runs of nearly constant value (a step is a jump bigger than `tol`).
+ *  Runs shorter than `minLen` are merged into the longer neighbour, so edge blur and chamfers do not create tiny sections. */
+export function profileRuns(values: number[], tol: number, minLen: number): Run[] {
+  const runs: Run[] = [];
+  let s = 0;
+  for (let i = 1; i <= values.length; i++) {
+    if (i === values.length || Math.abs(values[i] - values[s]) > tol) {
+      const seg = values.slice(s, i).sort((a, b) => a - b);
+      runs.push({ start: s, end: i, value: seg[Math.floor(seg.length / 2)] });
+      s = i;
+    }
+  }
+  const merge = (): boolean => {
+    const k = runs.findIndex((r) => r.end - r.start < minLen);
+    if (k < 0 || runs.length < 2) return false;
+    const L = runs[k - 1], N = runs[k + 1], into = !L ? k + 1 : !N ? k - 1 : (L.end - L.start >= N.end - N.start ? k - 1 : k + 1);
+    const a = Math.min(into, k), b = Math.max(into, k), keep = runs[into];
+    runs.splice(a, 2, { start: runs[a].start, end: runs[b].end, value: keep.value });
+    return true;
+  };
+  while (merge()) { /* repeat until every run is long enough */ }
+  // neighbouring runs that ended up with the same value become one
+  for (let i = runs.length - 1; i > 0; i--) if (Math.abs(runs[i].value - runs[i - 1].value) <= tol) { runs[i - 1].end = runs[i].end; runs.splice(i, 1); }
+  return runs;
+}
+
+/** Width of the shape along each column (axis 'x') or each row (axis 'y'): the distance between its first and last foreground pixel. */
+export function extents(mask: Uint8Array, w: number, h: number, axis: 'x' | 'y'): { lo: number[]; hi: number[]; ext: number[]; first: number; last: number } {
+  const n = axis === 'x' ? w : h, m = axis === 'x' ? h : w, lo: number[] = [], hi: number[] = [], ext: number[] = [];
+  let first = -1, last = -1;
+  for (let i = 0; i < n; i++) {
+    let a = -1, b = -1;
+    for (let j = 0; j < m; j++) if (mask[axis === 'x' ? j * w + i : i * w + j]) { if (a < 0) a = j; b = j; }
+    if (a >= 0) { if (first < 0) first = i; last = i; }
+    lo.push(a); hi.push(b); ext.push(a < 0 ? 0 : b - a + 1);
+  }
+  return { lo, hi, ext, first, last };
+}
+
+export interface TurnedSection { length: number; diameter: number }
+/** Reads a round part lying in the picture (axis 'x' = left to right, 'y' = top to bottom) as stacked sections.
+ *  The picture is scaled so that the chosen overall measure becomes `mm` ('length' along the axis, or the 'diameter' of the thickest section). */
+export function turnedFromMask(mask: Uint8Array, w: number, h: number, axis: 'x' | 'y', ref: 'length' | 'diameter', mm: number, tolFrac = 0.03): { sections: TurnedSection[]; lengthMm: number; maxDiameterMm: number; scale: number } | { error: string } {
+  const e = extents(mask, w, h, axis);
+  if (e.first < 0) return { error: 'No shape found.' };
+  const ext = e.ext.slice(e.first, e.last + 1), maxExt = Math.max(...ext), lenPx = ext.length;
+  if (lenPx < 6 || maxExt < 3) return { error: 'The shape is too small to read.' };
+  const runs = profileRuns(ext, Math.max(1.5, maxExt * tolFrac), Math.max(2, Math.round(lenPx * 0.015)));
+  const s = mm / (ref === 'length' ? lenPx : maxExt), r2 = (v: number) => +v.toFixed(2);
+  return { sections: runs.map((r) => ({ length: r2((r.end - r.start) * s), diameter: r2(r.value * s) })), lengthMm: lenPx * s, maxDiameterMm: maxExt * s, scale: s };
+}
+
+export interface SteppedSlab { width: number; height: number }
+/** Reads a front view of stacked blocks (bottom to top). `ref` is the overall 'height' or the widest 'width' that equals `mm`. */
+export function steppedFromMask(mask: Uint8Array, w: number, h: number, ref: 'height' | 'width', mm: number, tolFrac = 0.03): { slabs: SteppedSlab[]; heightMm: number; widthMm: number; scale: number } | { error: string } {
+  const e = extents(mask, w, h, 'y');
+  if (e.first < 0) return { error: 'No shape found.' };
+  const ext = e.ext.slice(e.first, e.last + 1).reverse(), maxExt = Math.max(...ext), hPx = ext.length; // bottom row first
+  if (hPx < 6 || maxExt < 3) return { error: 'The shape is too small to read.' };
+  const runs = profileRuns(ext, Math.max(1.5, maxExt * tolFrac), Math.max(2, Math.round(hPx * 0.03)));
+  const s = mm / (ref === 'height' ? hPx : maxExt), r2 = (v: number) => +v.toFixed(2);
+  return { slabs: runs.map((r) => ({ width: r2(r.value * s), height: r2((r.end - r.start) * s) })), heightMm: hPx * s, widthMm: maxExt * s, scale: s };
+}
