@@ -21,7 +21,7 @@ const referenceTables = (): Record<string, unknown> => ({
 
 export function AccountPage() {
   const auth = useAuth();
-  const [mode, setMode] = useState<'in' | 'up' | 'otp' | 'forgot' | 'reset'>('in');
+  const [mode, setMode] = useState<'in' | 'up' | 'otp' | 'forgot' | 'reset' | 'pending'>('in');
   const [otpFor, setOtpFor] = useState<{ email: string; purpose: 'signup' | 'login' } | null>(null);
   const [otp, setOtp] = useState('');
   const [info, setInfo] = useState('');
@@ -74,22 +74,30 @@ export function AccountPage() {
     const back = () => { setMode('in'); setOtp(''); setMsg(''); setInfo(''); setOtpFor(null); };
     const submit = (e: { preventDefault(): void }) => {
       e.preventDefault(); setInfo('');
-      void act(mode === 'in' ? 'Sign in' : mode === 'up' ? 'Create account' : mode === 'otp' ? 'Verify' : mode === 'forgot' ? 'Reset' : 'Reset', async () => {
+      void act(mode === 'in' ? 'Sign in' : mode === 'up' ? 'Request access' : mode === 'otp' ? 'Verify' : mode === 'forgot' ? 'Reset' : 'Reset', async () => {
         if (mode === 'in' || mode === 'up') {
           const r = mode === 'in' ? await login(email, password) : await register(email, password, name, code);
+          if (r.step === 'pending') { setMode('pending'); setInfo(''); }
           if (r.step === 'otp') { setOtpFor({ email: r.email, purpose: r.purpose }); setOtp(''); setMode('otp'); setInfo(`We sent a 6-digit code to ${r.email}. Enter it below. It is valid for 10 minutes.`); }
           setPassword('');
-        } else if (mode === 'otp' && otpFor) { await verifyCode(otpFor.email, otpFor.purpose, otp); setOtp(''); }
+        } else if (mode === 'otp' && otpFor) { const r = await verifyCode(otpFor.email, otpFor.purpose, otp); setOtp(''); if (r.step === 'pending') { setMode('pending'); setInfo(''); } }
         else if (mode === 'forgot') { await forgotPassword(email); setMode('reset'); setInfo('If this email has an account, a 6-digit code was sent to it. Enter the code and a new password.'); }
         else if (mode === 'reset') { await resetPassword(email, otp, password); setPassword(''); setOtp(''); setMode('in'); setInfo('Password changed. Sign in with the new password.'); }
       });
     };
+    if (mode === 'pending') return (
+      <div className="page">
+        <PageHeader title="Access request sent" subtitle="Your request is waiting for the administrator." />
+        <div className="panel authbox"><div className="box info">Thank you. Your request has been sent. You can sign in after the administrator approves it. Please try again later or contact your administrator.</div>
+          <div className="actions"><button className="primary" onClick={back}>Back to sign in</button></div></div>
+      </div>
+    );
     const title = mode === 'otp' ? 'Enter the code from your email' : mode === 'forgot' ? 'Forgot password' : mode === 'reset' ? 'Choose a new password' : '';
     return (
       <div className="page">
-        <PageHeader title="Account" subtitle="Sign in to save designs in the cloud database and open them from any computer." />
+        <PageHeader title="Account" subtitle="Sign in to use the designer. New users request access; the administrator approves it." />
         <form className="panel authbox" onSubmit={submit}>
-          {(mode === 'in' || mode === 'up') && <div className="modebar"><button type="button" className={mode === 'in' ? 'on' : ''} onClick={() => { setMode('in'); setMsg(''); setInfo(''); }}>Sign in</button><button type="button" className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setMsg(''); setInfo(''); }}>Create account</button></div>}
+          {(mode === 'in' || mode === 'up') && <div className="modebar"><button type="button" className={mode === 'in' ? 'on' : ''} onClick={() => { setMode('in'); setMsg(''); setInfo(''); }}>Sign in</button><button type="button" className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setMsg(''); setInfo(''); }}>Request access</button></div>}
           {title && <h3>{title}</h3>}
           {info && <div className="box info">{info}</div>}
           {mode === 'up' && <label className="field"><span>Your name</span><input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} autoComplete="name" /></label>}
@@ -98,13 +106,13 @@ export function AccountPage() {
           {(mode === 'otp' || mode === 'reset') && <label className="field"><span>6-digit code</span><input inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} autoComplete="one-time-code" autoFocus style={{ letterSpacing: '0.4em', fontSize: '1.3em', maxWidth: 200 }} /></label>}
           {mode === 'up' && <label className="field"><span>Sign-up code <em>(only if your administrator gave you one)</em></span><input value={code} onChange={(e) => setCode(e.target.value)} autoComplete="off" /></label>}
           <div className="actions">
-            <button className="primary" disabled={busy}>{mode === 'in' ? 'Sign in' : mode === 'up' ? 'Create account' : mode === 'otp' ? 'Verify and continue' : mode === 'forgot' ? 'Send code' : 'Change password'}</button>
+            <button className="primary" disabled={busy}>{mode === 'in' ? 'Sign in' : mode === 'up' ? 'Request access' : mode === 'otp' ? 'Verify and continue' : mode === 'forgot' ? 'Send code' : 'Change password'}</button>
             {mode === 'otp' && otpFor && <button type="button" disabled={busy} onClick={() => void act('Resend', async () => { await resendCode(otpFor.email, otpFor.purpose); setInfo('A new code was sent if the last one has been used or expired. Wait 30 seconds between requests.'); })}>Send a new code</button>}
             {mode !== 'in' && mode !== 'up' && <button type="button" onClick={back}>Back</button>}
           </div>
           {mode === 'in' && <p><a href="#/account" onClick={(e) => { e.preventDefault(); setMode('forgot'); setMsg(''); setInfo(''); }}>Forgot password?</a></p>}
           {msg && <div className="box err">{msg}</div>}
-          {(mode === 'in' || mode === 'up') && <p className="muted">{auth.emailCodes ? 'For your safety, a one-time code is emailed to you every time you sign in.' : 'Without signing in, the app still works and saves in this browser only.'}</p>}
+          {(mode === 'in' || mode === 'up') && <p className="muted">{mode === 'up' ? 'New here? Send an access request. You can sign in once the administrator approves it.' : auth.emailCodes ? 'For your safety, a one-time code is emailed to you every time you sign in.' : ''}</p>}
         </form>
       </div>
     );

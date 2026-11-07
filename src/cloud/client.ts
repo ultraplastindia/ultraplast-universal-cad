@@ -29,9 +29,10 @@ export function refreshAuth(): Promise<void> {
 export const authReady = (): Promise<void> => (first ??= refreshAuth());
 
 /** Sign-in and sign-up answer either with the user, or with step 'otp' = a 6-digit code was mailed and must be entered next. */
-export type AuthStep = { step: 'otp'; purpose: 'signup' | 'login'; email: string } | { step: 'done' };
+export type AuthStep = { step: 'otp'; purpose: 'signup' | 'login'; email: string } | { step: 'pending'; email: string } | { step: 'done' };
 const account = async (body: object): Promise<AuthStep> => {
-  const j = await call<{ user?: CloudUser; step?: 'otp'; purpose?: 'signup' | 'login'; email?: string }>('/api/account', { method: 'POST', body: JSON.stringify(body) });
+  const j = await call<{ user?: CloudUser; step?: 'otp' | 'pending'; purpose?: 'signup' | 'login'; email?: string }>('/api/account', { method: 'POST', body: JSON.stringify(body) });
+  if (j.step === 'pending') return { step: 'pending', email: j.email ?? '' };
   if (j.step === 'otp') return { step: 'otp', purpose: j.purpose ?? 'login', email: j.email ?? '' };
   set({ user: j.user ?? null }); return { step: 'done' };
 };
@@ -81,7 +82,7 @@ export async function putTypes(types: TypeRow[]): Promise<void> { await call('/a
 export async function deleteType(id: string): Promise<void> { await call(`/api/types?id=${encodeURIComponent(id)}`, { method: 'DELETE' }); }
 
 /* ---------- administrator settings ---------- */
-export interface AdminUser { id: string; email: string; name: string; isAdmin: boolean; disabled: boolean; verified: boolean; createdAt: string; aiToday: number }
+export interface AdminUser { id: string; email: string; name: string; isAdmin: boolean; disabled: boolean; approved: boolean; verified: boolean; createdAt: string; aiToday: number }
 export interface AdminProvider { id: string; label: string; use: 'vision' | 'mesh'; help: string; enabled: boolean; model: string; hasKey: boolean; keyHint: string }
 export interface AdminOverview {
   mail: { enabled: boolean; host: string; port: number; secure: boolean; user: string; fromName: string; fromEmail: string; hasPassword: boolean; passwordHint: string; ready: boolean };

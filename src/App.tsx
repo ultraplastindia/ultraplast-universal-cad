@@ -30,6 +30,15 @@ export default function App() {
     return () => window.removeEventListener('keydown', h);
   }, []);
   const page = r.path[0] ?? 'dashboard';
+  // When the cloud database is connected, nothing is shown until the person signs in (and has been approved).
+  if (!auth.ready) return <div className="app"><main><div className="page"><p className="muted">Loading...</p></div></main></div>;
+  if (auth.configured && !auth.user) return (
+    <div className="app">
+      <header className="top"><span className="brand"><Logo height={34} box /><span>Conveyor Designer<small>CAD automation</small></span></span></header>
+      <main><AccountPage /></main>
+      <Toaster />
+    </div>
+  );
   const key = r.path.join('/') + '?' + r.query.toString();
   return (
     <div className="app">

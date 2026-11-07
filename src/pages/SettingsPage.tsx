@@ -51,18 +51,20 @@ function Users({ ov, me, busy, run }: P & { me: string }) {
   const [pw, setPw] = useState<{ id: string; value: string } | null>(null);
   return (
     <section>
+      {ov.users.some((u) => !u.approved) && <div className="box warn"><b>{ov.users.filter((u) => !u.approved).length} access request(s) waiting.</b> Press Approve next to the person to let them in, or Reject to remove the request.</div>}
       <p className="muted">{ov.users.length} account(s). Make someone an administrator, switch an account off, set a new password, or delete the account (its saved designs and pictures are deleted with it).</p>
       <div style={{ overflowX: 'auto' }}><table className="tbl">
         <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>AI today</th><th>Actions</th></tr></thead>
         <tbody>{ov.users.map((u) => (
           <tr key={u.id}>
             <td>{u.name}{u.id === me && ' (you)'}</td><td>{u.email}</td><td>{u.isAdmin ? 'Administrator' : 'User'}</td>
-            <td>{u.disabled ? 'Disabled' : u.verified ? 'Active' : 'Email not confirmed'}</td><td>{u.aiToday}</td>
+            <td>{!u.approved ? <b>Waiting for approval</b> : u.disabled ? 'Disabled' : u.verified ? 'Active' : 'Email not confirmed'}</td><td>{u.aiToday}</td>
             <td><div className="actions" style={{ margin: 0, flexWrap: 'wrap' }}>
+              {!u.approved && <button className="primary" disabled={busy} onClick={() => void run('Approve', 'approve', { id: u.id }, 'Approved. The person can sign in now.')}>Approve</button>}
               <button disabled={busy || (u.id === me && u.isAdmin && ov.users.filter((x) => x.isAdmin && !x.disabled).length <= 1)} onClick={() => void run('Role', 'setAdmin', { id: u.id, value: !u.isAdmin })}>{u.isAdmin ? 'Remove admin' : 'Make admin'}</button>
               <button disabled={busy || u.id === me} onClick={() => void run('Status', 'setDisabled', { id: u.id, value: !u.disabled })}>{u.disabled ? 'Enable' : 'Disable'}</button>
               <button disabled={busy} onClick={() => setPw({ id: u.id, value: '' })}>Set password</button>
-              <button disabled={busy || u.id === me} onClick={() => { if (window.confirm(`Delete ${u.email} and all of their saved designs? This cannot be undone.`)) void run('Delete', 'deleteUser', { id: u.id }, 'User deleted.'); }}>Delete</button>
+              <button disabled={busy || u.id === me} onClick={() => { if (window.confirm(u.approved ? `Delete ${u.email} and all of their saved designs? This cannot be undone.` : `Reject and remove the request from ${u.email}?`)) void run('Delete', 'deleteUser', { id: u.id }, 'User deleted.'); }}>{u.approved ? 'Delete' : 'Reject'}</button>
             </div></td>
           </tr>))}</tbody>
       </table></div>
