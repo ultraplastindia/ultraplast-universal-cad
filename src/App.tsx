@@ -39,7 +39,13 @@ export default function App() {
       <header className="top">
         <a href="#/dashboard" className="brand"><Logo height={34} box /><span>Conveyor Designer<small>CAD automation</small></span></a>
         <div className="top-search"><SearchBox compact id="global-search" value={hq} onChange={setHq} onSubmit={(v) => { go(`components?q=${encodeURIComponent(v)}`); setHq(''); }} placeholder="Search components   ( / )" /></div>
-        <nav>{nav.map(([k, l]) => <a key={k} href={`#/${k}`} className={page === k ? 'on' : ''}>{l}</a>)}</nav>
+        <nav>{nav.filter(([k]) => k !== 'account' || !auth.user).map(([k, l]) => <a key={k} href={`#/${k}`} className={page === k ? 'on' : ''}>{l}</a>)}</nav>
+        {auth.user && (
+          <a href="#/account" className={`user-chip${page === 'account' ? ' on' : ''}`} title={`${auth.user.name} (${auth.user.email}). Open your account`}>
+            <span className="avatar" aria-hidden="true">{auth.user.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}</span>
+            <span className="who"><b>{auth.user.name}</b><small>{auth.user.isAdmin ? 'Administrator' : 'User'}</small></span>
+          </a>
+        )}
       </header>
       <main>
         {page === 'dashboard' && <Dashboard />}

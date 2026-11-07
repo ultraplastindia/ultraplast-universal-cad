@@ -131,3 +131,18 @@ button.primary.wide{flex:1;padding:12px 16px;font-size:15px;border-radius:10px;b
 .auth-foot{margin:0;color:var(--mut);font-size:12px;text-align:center;max-width:440px}
 .auth-done{display:flex;gap:14px;align-items:flex-start;background:#f4faf6;border:1px solid #cfe9d8;border-radius:12px;padding:16px;margin-bottom:18px}.auth-done svg{flex:none}.auth-done p{margin:0;color:#24402f}
 @media (max-width:860px){.authpage{grid-template-columns:1fr}.auth-brand{padding:26px 24px 30px}.auth-brand h1{font-size:26px;margin-top:20px}.auth-brand ul,.auth-brand small{display:none}.auth-main{padding:24px 16px 36px}.auth-card{padding:26px 22px}}
+
+/* ===== header: one tidy line, user chip at the right (v0.7) ===== */
+.top{flex-wrap:nowrap;gap:14px;padding:8px 22px;min-height:64px}
+.brand{flex:none}.brand span{line-height:1.2;white-space:nowrap}.brand small{margin-top:2px}
+.top-search{flex:0 1 250px;min-width:150px}.top-search input{width:100%}
+.top nav{flex:1 1 auto;min-width:0;margin-left:0;justify-content:flex-end;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0}
+.top nav::-webkit-scrollbar{display:none}
+.top nav a{padding:7px 10px;font-size:13.5px;white-space:nowrap}
+.user-chip{flex:none;display:flex;align-items:center;gap:10px;padding:4px 14px 4px 5px;border-radius:999px;text-decoration:none;color:#fff;background:#ffffff14;border:1px solid #ffffff26;margin-left:4px;transition:.15s}
+.user-chip:hover,.user-chip.on{background:#ffffff26;border-color:#ffffff55}
+.user-chip .avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#1b1300;font-weight:800;font-size:13px;letter-spacing:.02em}
+.user-chip .who{display:flex;flex-direction:column;line-height:1.15;white-space:nowrap}.user-chip .who b{font-size:13.5px}.user-chip .who small{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#9db6d6}
+@media (max-width:1560px){.top{flex-wrap:wrap;row-gap:4px;padding-bottom:6px}.top-search{flex:1 1 220px;max-width:380px}.user-chip{margin-left:auto}.top nav{order:5;flex:1 1 100%;justify-content:flex-start;border-top:1px solid #ffffff1c;padding-top:4px;margin-top:2px}.top nav a{font-size:14px}}
+@media (max-width:560px){.user-chip .who{display:none}.user-chip{padding:4px}}
+@media (max-width:1040px){.top nav{flex-wrap:wrap;overflow:visible}}
