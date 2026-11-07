@@ -102,3 +102,6 @@ Not needed today: saving works in the browser. A database only becomes useful if
 - The administrator opens **Settings > Users**: waiting requests are marked "Waiting for approval" with **Approve** or **Reject**.
 - The very first account becomes the administrator and is approved automatically. Everyone who already had an account stays approved.
 - Without the cloud database (browser-only mode) there is no server to check anyone, so the site stays open as before.
+
+### v0.6.2: professional sign-in page
+The sign-in / request-access page now has a full-screen layout (company panel + form card, works on phones). Put the real logo at `public/assets/Logo.png`: it then appears on this page, the header, the footer, drawings and PDFs automatically.
