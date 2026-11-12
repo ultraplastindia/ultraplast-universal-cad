@@ -108,3 +108,6 @@ The sign-in / request-access page now has a full-screen layout (company panel + 
 
 ### v0.6.4: new logo
 Updated `public/assets/Logo.png` to the new logo. A step-by-step sign-in guide is in `docs/LOGIN_GUIDE.md`.
+
+### v0.7: tidier header
+One clean header line on wide screens (logo, search, menu, and a user chip with initials, name and role at the right); on laptops the menu moves to a second row. No features changed.
