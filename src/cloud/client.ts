@@ -2,7 +2,8 @@ import { useSyncExternalStore } from 'react';
 
 /** Browser side of the Neon cloud database. If the website has no database set up (or you run it locally with `npm run dev`),
  *  `configured` stays false and the app keeps using the browser storage exactly as before. */
-export interface CloudUser { id: string; email: string; name: string; isAdmin: boolean }
+export type Role = 'admin' | 'engineer' | 'employee' | 'viewer';
+export interface CloudUser { id: string; email: string; name: string; isAdmin: boolean; role?: Role }
 export interface AuthState { ready: boolean; configured: boolean; user: CloudUser | null; emailCodes: boolean }
 
 let state: AuthState = { ready: false, configured: false, user: null, emailCodes: false };
@@ -34,7 +35,7 @@ const account = async (body: object): Promise<AuthStep> => {
   const j = await call<{ user?: CloudUser; step?: 'otp' | 'pending'; purpose?: 'signup' | 'login'; email?: string }>('/api/account', { method: 'POST', body: JSON.stringify(body) });
   if (j.step === 'pending') return { step: 'pending', email: j.email ?? '' };
   if (j.step === 'otp') return { step: 'otp', purpose: j.purpose ?? 'login', email: j.email ?? '' };
-  set({ user: j.user ?? null }); return { step: 'done' };
+  set({ user: j.user ?? null }); await refreshAuth(); return { step: 'done' }; // reload so the role (viewer, employee ...) is known
 };
 export const register = (email: string, password: string, name: string, code: string): Promise<AuthStep> => account({ action: 'register', email, password, name, code });
 export const login = (email: string, password: string): Promise<AuthStep> => account({ action: 'login', email, password });
@@ -82,7 +83,7 @@ export async function putTypes(types: TypeRow[]): Promise<void> { await call('/a
 export async function deleteType(id: string): Promise<void> { await call(`/api/types?id=${encodeURIComponent(id)}`, { method: 'DELETE' }); }
 
 /* ---------- administrator settings ---------- */
-export interface AdminUser { id: string; email: string; name: string; isAdmin: boolean; disabled: boolean; approved: boolean; verified: boolean; createdAt: string; aiToday: number }
+export interface AdminUser { id: string; email: string; name: string; isAdmin: boolean; role: Role; disabled: boolean; approved: boolean; verified: boolean; createdAt: string; aiToday: number }
 export interface AdminProvider { id: string; label: string; use: 'vision' | 'mesh'; help: string; enabled: boolean; model: string; hasKey: boolean; keyHint: string }
 export interface AdminOverview {
   mail: { enabled: boolean; host: string; port: number; secure: boolean; user: string; fromName: string; fromEmail: string; hasPassword: boolean; passwordHint: string; ready: boolean };

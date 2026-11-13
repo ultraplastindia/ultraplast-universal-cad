@@ -26,8 +26,8 @@ export const MULTI_FIELDS: ParamField[] = [
   { key: 'strandCore', label: 'Between the strands', kind: 'select', options: [{ value: 'root', label: 'Solid body up to the root diameter (duplex / triplex)' }, { value: 'hub', label: 'Hub diameter only (double single)' }], showIf: (p) => num(p, 'strands') > 1 },
   { key: 'hubSide', label: 'Hub position', kind: 'select', options: [{ value: 'one', label: 'One side' }, { value: 'both', label: 'Both sides (each side as long as the hub length)' }], showIf: (p) => num(p, 'hubLength') > 0 },
   { key: 'boltCount', label: 'Flange bolt holes in the hub (0 = none)', kind: 'number', min: 0, max: 12, step: 1, help: 'For QD, drive and bush-type hubs. Needs a hub.' },
-  { key: 'boltPcd', label: 'Bolt circle diameter', unit: 'mm', kind: 'number', min: 10, max: 400, step: 0.5, showIf: hasBoltFields },
-  { key: 'boltDia', label: 'Bolt hole diameter', unit: 'mm', kind: 'number', min: 2, max: 40, step: 0.1, showIf: hasBoltFields },
+  { key: 'boltPcd', label: 'Bolt circle diameter', unit: 'mm', kind: 'number', min: 0, max: 400, step: 0.5, showIf: hasBoltFields },
+  { key: 'boltDia', label: 'Bolt hole diameter', unit: 'mm', kind: 'number', min: 0, max: 40, step: 0.1, showIf: hasBoltFields },
   { key: 'split', label: 'Split sprocket (two halves joined by bolts)', kind: 'boolean', help: 'Shown in the drawing as a split line. The 3D model is drawn as one piece.' },
 ];
 

@@ -268,3 +268,38 @@ export function steppedFromMask(mask: Uint8Array, w: number, h: number, ref: 'he
   const s = mm / (ref === 'height' ? hPx : maxExt), r2 = (v: number) => +v.toFixed(2);
   return { slabs: runs.map((r) => ({ width: r2(r.value * s), height: r2((r.end - r.start) * s) })), heightMm: hPx * s, widthMm: maxExt * s, scale: s };
 }
+
+/* ---------- how far a reading can be trusted ---------- */
+export interface Confidence { level: 'high' | 'medium' | 'low'; score: number; reasons: string[] }
+/** Judges a traced silhouette: how clearly the part stands out from the background, whether it is cut off by the picture edge,
+ *  how many edge pixels were a close call, and how much other "stuff" was ignored. The result is a hint for the person,
+ *  never a guarantee: every value must still be checked against the real part. */
+export function confidenceOf(img: Raster, mask: Uint8Array, thr: number): Confidence {
+  const { width: w, height: h } = img, { dist } = backgroundDistance(img), reasons: string[] = [];
+  let fg = 0, fgSum = 0, bg = 0, bgSum = 0, close = 0, edge = 0, touches = 0, over = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (mask[i]) { fg++; fgSum += dist[i]; } else { bg++; bgSum += dist[i]; }
+    if (dist[i] > thr) over++;
+  }
+  if (!fg) return { level: 'low', score: 0, reasons: ['No part was found in the picture.'] };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (!mask[i]) continue;
+    if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touches++;
+    const nb = (x > 0 && !mask[i - 1]) || (x < w - 1 && !mask[i + 1]) || (y > 0 && !mask[i - w]) || (y < h - 1 && !mask[i + w]);
+    if (nb) { edge++; if (Math.abs(dist[i] - thr) < Math.max(6, thr * 0.25)) close++; }
+  }
+  let score = 100;
+  const contrast = fgSum / fg - (bg ? bgSum / bg : 0);
+  if (contrast < 40) { score -= 35; reasons.push('The part and the background look very similar (low contrast). Use a plain, evenly lit background.'); }
+  else if (contrast < 80) { score -= 15; reasons.push('Contrast between part and background is moderate.'); }
+  if (touches > 0) { score -= 30; reasons.push('The part touches the edge of the picture, so it may be cut off.'); }
+  const closeFrac = edge ? close / edge : 0;
+  if (closeFrac > 0.35) { score -= 25; reasons.push(`${Math.round(closeFrac * 100)}% of the outline is a close call (soft edges or shadows). Adjust the sensitivity and compare.`); }
+  else if (closeFrac > 0.15) { score -= 10; reasons.push('Some of the outline is a close call (soft edges).'); }
+  const extra = over ? 1 - fg / over : 0;
+  if (extra > 0.3) { score -= 15; reasons.push(`${Math.round(extra * 100)}% of the detected material belongs to other objects or shadows and was ignored.`); }
+  if (Math.min(w, h) < 200) { score -= 10; reasons.push('The picture is small: use a higher-resolution photo.'); }
+  score = Math.max(0, score);
+  return { level: score >= 75 ? 'high' : score >= 50 ? 'medium' : 'low', score, reasons: reasons.length ? reasons : ['Clear outline, good contrast.'] };
+}

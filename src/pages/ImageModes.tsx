@@ -9,7 +9,8 @@ import { MATERIALS } from '../data/materials.ts';
 import { getFamily } from '../families/index.ts';
 import { formatList, parseList } from '../families/custom/turned.ts';
 import { outlineParams } from '../families/custom/custom.ts';
-import { steppedFromMask, turnedFromMask } from '../lib/trace.ts';
+import { confidenceOf, steppedFromMask, turnedFromMask } from '../lib/trace.ts';
+import type { Confidence } from '../lib/trace.ts';
 import { saveProject } from '../storage/db.ts';
 import { newId } from '../storage/project.ts';
 import type { Params } from '../core/types.ts';
@@ -38,7 +39,10 @@ function usePicture() {
     try { const p = await loadPicture(f); setPic(p); setThr(p.autoThr); setInvert(false); } catch (e) { const m = e instanceof Error ? e.message : 'Could not open the picture.'; setMsg(m); toast(m, 'err'); } finally { setBusy(false); }
   };
   const mask = useMemo(() => (pic ? maskOf(pic.raster, thr, invert) : null), [pic, thr, invert]);
-  return { pic, thr, setThr, invert, setInvert, busy, setBusy, msg, setMsg, choose, mask };
+  const conf = useMemo(() => (pic && mask ? confidenceOf(pic.raster, mask, thr) : null), [pic, mask, thr]);
+  const [confirmed, setConfirmed] = useState(false);
+  useEffect(() => { setConfirmed(false); }, [pic, thr, invert]); // any change of picture or sensitivity needs a new confirmation
+  return { pic, thr, setThr, invert, setInvert, busy, setBusy, msg, setMsg, choose, mask, conf, confirmed, setConfirmed };
 }
 type PicState = ReturnType<typeof usePicture>;
 
@@ -50,6 +54,18 @@ function PicControls({ s, sens = true }: { s: PicState; sens?: boolean }) {
       <label className="field"><span>Part is lighter than the background</span><input type="checkbox" checked={s.invert} onChange={(e) => s.setInvert(e.target.checked)} /></label>
     </>)}
   </>);
+}
+
+/** Reading quality and the confirmation the person must tick before a part is created from a photo. */
+export function ConfidenceBox({ conf, confirmed, onConfirm }: { conf: Confidence | null; confirmed: boolean; onConfirm: (v: boolean) => void }) {
+  if (!conf) return null;
+  return (
+    <div className={`box ${conf.level === 'high' ? 'info' : conf.level === 'medium' ? 'warn' : 'err'}`}>
+      <b>Reading confidence: {conf.level === 'high' ? 'High' : conf.level === 'medium' ? 'Medium' : 'Low'} ({conf.score}/100)</b>
+      <ul>{conf.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
+      <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}><input type="checkbox" checked={confirmed} onChange={(e) => onConfirm(e.target.checked)} /><span>I have checked these values against the real part or drawing. Values read from a picture are <b>not confirmed engineering values</b> until I confirm them.</span></label>
+    </div>
+  );
 }
 
 /** The picture with the part found in it shaded blue. */
@@ -124,7 +140,8 @@ export function TurnedMode() {
           <MatSelect v={mat} set={setMat} />
           <label className="field"><span>3. Check or correct the sections <em>(length,diameter; ...)</em></span><textarea rows={5} value={text} onChange={(e) => setEdit(e.target.value)} /><small>These were read from the picture. Type the real values where you know them better.</small></label>
           <label className="field"><span>Name</span><input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} /></label>
-          <div className="actions"><button className="primary" disabled={s.busy || typeof parsed === 'string' || !(bore >= 0)} onClick={create}>Create drawing and 3D model</button></div>
+          <ConfidenceBox conf={s.conf} confirmed={s.confirmed} onConfirm={s.setConfirmed} />
+          <div className="actions"><button className="primary" disabled={s.busy || !s.confirmed || typeof parsed === 'string' || !(bore >= 0)} onClick={create}>Create drawing and 3D model</button></div>
           {typeof parsed === 'string' && <div className="box warn">{parsed}</div>}
         </>)}
         {s.msg && <div className="box err">{s.msg}</div>}
@@ -171,7 +188,8 @@ export function SteppedMode() {
           <MatSelect v={mat} set={setMat} />
           <label className="field"><span>3. Check or correct the blocks <em>(width,depth,height; bottom first)</em></span><textarea rows={5} value={text} onChange={(e) => setEdit(e.target.value)} /></label>
           <label className="field"><span>Name</span><input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} /></label>
-          <div className="actions"><button className="primary" disabled={s.busy || typeof parsed === 'string' || !(hole >= 0)} onClick={create}>Create drawing and 3D model</button></div>
+          <ConfidenceBox conf={s.conf} confirmed={s.confirmed} onConfirm={s.setConfirmed} />
+          <div className="actions"><button className="primary" disabled={s.busy || !s.confirmed || typeof parsed === 'string' || !(hole >= 0)} onClick={create}>Create drawing and 3D model</button></div>
           {typeof parsed === 'string' && <div className="box warn">{parsed}</div>}
         </>)}
         {s.msg && <div className="box err">{s.msg}</div>}

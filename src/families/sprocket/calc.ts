@@ -15,7 +15,7 @@ export const SPROCKET_FIELDS: ParamField[] = [
   { key: 'rollerDia', label: 'Roller diameter d1', unit: 'mm', kind: 'number', min: 1, max: 60, step: 0.01, showIf: isCustom },
   { key: 'innerWidth', label: 'Inner width b1', unit: 'mm', kind: 'number', min: 1, max: 60, step: 0.01, showIf: isCustom },
   { key: 'teeth', label: 'Number of teeth z', kind: 'number', min: 6, max: 150, step: 1 },
-  { key: 'bore', label: 'Bore diameter', unit: 'mm', kind: 'number', min: 5, max: 150, step: 0.5 },
+  { key: 'bore', label: 'Bore diameter', unit: 'mm', kind: 'number', min: 5, max: 200, step: 0.5 },
   { key: 'keyway', label: 'Keyway (DIN 6885 / ISO 773)', kind: 'boolean' },
   { key: 'hubDia', label: 'Hub diameter', unit: 'mm', kind: 'number', min: 0, max: 300, step: 0.5 },
   { key: 'hubLength', label: 'Hub length (beyond tooth plate)', unit: 'mm', kind: 'number', min: 0, max: 200, step: 0.5, help: '0 = plain plate sprocket, no hub' },

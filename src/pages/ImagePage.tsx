@@ -2,10 +2,10 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { MATERIALS } from '../data/materials.ts';
 import { getFamily } from '../families/index.ts';
 import { outlineParams } from '../families/custom/custom.ts';
-import { DEFAULT_TRACE, toMillimetres, traceImage } from '../lib/trace.ts';
+import { confidenceOf, DEFAULT_TRACE, toMillimetres, traceImage } from '../lib/trace.ts';
 import { loadPicture } from './imageCommon.ts';
 import type { Loaded } from './imageCommon.ts';
-import { AiMode, SteppedMode, TurnedMode } from './ImageModes.tsx';
+import { AiMode, ConfidenceBox, SteppedMode, TurnedMode } from './ImageModes.tsx';
 import type { RefDim } from '../lib/trace.ts';
 import { saveProject } from '../storage/db.ts';
 import { newId } from '../storage/project.ts';
@@ -36,6 +36,9 @@ function FlatMode() {
   const opts = useDeferredValue({ threshold: thr, invert, smooth, tolerance: tol });
   const traced = useMemo(() => (pic ? traceImage(pic.raster, opts) : null), [pic, opts]);
   const result = traced && !('error' in traced) ? traced : null;
+  const conf = useMemo(() => (pic && result ? confidenceOf(pic.raster, result.mask, thr) : null), [pic, result, thr]);
+  const [confirmed, setConfirmed] = useState(false);
+  useEffect(() => { setConfirmed(false); }, [pic, thr, invert, smooth, tol]);
   const real = useMemo(() => (result && mm > 0 ? toMillimetres(result, ref, mm) : null), [result, ref, mm]);
 
   const choose = async (f: File | undefined) => {
@@ -88,7 +91,8 @@ function FlatMode() {
             <label className="field"><span>Thickness <em>(mm)</em></span><input type="number" min={0.5} step={0.5} value={Number.isFinite(thick) ? thick : ''} onChange={(e) => setThick(e.target.value === '' ? NaN : parseFloat(e.target.value))} /></label>
             <label className="field"><span>Material</span><select value={mat} onChange={(e) => setMat(e.target.value)}>{MATERIALS.map((m) => <option key={m.id}>{m.id}</option>)}</select></label>
             <label className="field"><span>Name</span><input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} /></label>
-            <div className="actions"><button className="primary" disabled={busy || !real || !(thick >= 0.5)} onClick={() => void create()}>Create drawing and 3D model</button></div>
+            <ConfidenceBox conf={conf} confirmed={confirmed} onConfirm={setConfirmed} />
+            <div className="actions"><button className="primary" disabled={busy || !real || !confirmed || !(thick >= 0.5)} onClick={() => void create()}>Create drawing and 3D model</button></div>
           </>)}
           {msg && <div className="box err">{msg}</div>}
           {traced && 'error' in traced && <div className="box warn">{traced.error}</div>}

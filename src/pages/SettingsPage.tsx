@@ -52,12 +52,13 @@ function Users({ ov, me, busy, run }: P & { me: string }) {
   return (
     <section>
       {ov.users.some((u) => !u.approved) && <div className="box warn"><b>{ov.users.filter((u) => !u.approved).length} access request(s) waiting.</b> Press Approve next to the person to let them in, or Reject to remove the request.</div>}
+      <div className="box info"><b>Roles.</b> <b>Administrator:</b> everything including Settings. <b>Engineer:</b> design, save, upload pictures, AI helpers. <b>Employee:</b> design, save, upload; no AI helpers. <b>Viewer:</b> look only, cannot save, upload or use AI. New people start as Engineer.</div>
       <p className="muted">{ov.users.length} account(s). Make someone an administrator, switch an account off, set a new password, or delete the account (its saved designs and pictures are deleted with it).</p>
       <div style={{ overflowX: 'auto' }}><table className="tbl">
         <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>AI today</th><th>Actions</th></tr></thead>
         <tbody>{ov.users.map((u) => (
           <tr key={u.id}>
-            <td>{u.name}{u.id === me && ' (you)'}</td><td>{u.email}</td><td>{u.isAdmin ? 'Administrator' : 'User'}</td>
+            <td>{u.name}{u.id === me && ' (you)'}</td><td>{u.email}</td><td><select value={u.role} disabled={busy || (u.id === me)} aria-label={`Role of ${u.email}`} onChange={(e) => void run('Role', 'setRole', { id: u.id, role: e.target.value }, 'Role changed.')}><option value="admin">Administrator</option><option value="engineer">Engineer</option><option value="employee">Employee</option><option value="viewer">Viewer (read only)</option></select></td>
             <td>{!u.approved ? <b>Waiting for approval</b> : u.disabled ? 'Disabled' : u.verified ? 'Active' : 'Email not confirmed'}</td><td>{u.aiToday}</td>
             <td><div className="actions" style={{ margin: 0, flexWrap: 'wrap' }}>
               {!u.approved && <button className="primary" disabled={busy} onClick={() => void run('Approve', 'approve', { id: u.id }, 'Approved. The person can sign in now.')}>Approve</button>}
