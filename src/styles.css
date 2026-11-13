@@ -146,3 +146,12 @@ button.primary.wide{flex:1;padding:12px 16px;font-size:15px;border-radius:10px;b
 @media (max-width:1560px){.top{flex-wrap:wrap;row-gap:4px;padding-bottom:6px}.top-search{flex:1 1 220px;max-width:380px}.user-chip{margin-left:auto}.top nav{order:5;flex:1 1 100%;justify-content:flex-start;border-top:1px solid #ffffff1c;padding-top:4px;margin-top:2px}.top nav a{font-size:14px}}
 @media (max-width:560px){.user-chip .who{display:none}.user-chip{padding:4px}}
 @media (max-width:1040px){.top nav{flex-wrap:wrap;overflow:visible}}
+
+/* ===== conveyor tools + favourites (v0.8) ===== */
+.toolcard{margin:0 0 18px}.toolcard h3{margin:0 0 4px;color:var(--navy)}
+.toolgrid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(260px,1fr);gap:26px;align-items:start}
+.toolgrid .field{margin:0 0 10px}.toolres td.num{text-align:right;white-space:nowrap}.toolres{margin-bottom:10px}
+.btnlink{display:inline-block;margin-top:6px;padding:7px 13px;border:1px solid var(--line);border-radius:8px;text-decoration:none;background:#fff}.btnlink:hover{border-color:var(--blue)}
+.favbtn{border:none;background:transparent;box-shadow:none;font-size:20px;line-height:1;padding:0 4px;color:#b9c3d0}.favbtn.on{color:var(--amber)}.favbtn:hover:not(:disabled){transform:none;color:var(--amber)}
+.recent{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.recent button{border-radius:999px;font-size:13px}
+@media (max-width:760px){.toolgrid{grid-template-columns:1fr}}

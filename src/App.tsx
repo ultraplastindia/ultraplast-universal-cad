@@ -13,9 +13,10 @@ import { TypesPage } from './pages/TypesPage.tsx';
 import { ImagePage } from './pages/ImagePage.tsx';
 import { AccountPage } from './pages/AccountPage.tsx';
 import { SettingsPage } from './pages/SettingsPage.tsx';
+import { ToolsPage } from './pages/ToolsPage.tsx';
 import { authReady, useAuth } from './cloud/client.ts';
 
-const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
+const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['tools', 'Conveyor tools'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
 
 export default function App() {
   const r = useRoute();
@@ -56,6 +57,7 @@ export default function App() {
         {page === 'types' && <TypesPage />}
         {page === 'account' && <AccountPage />}
         {page === 'settings' && <SettingsPage />}
+        {page === 'tools' && <ToolsPage />}
         {page === 'saved' && <SavedPage />}
         {page === 'coverage' && <CoveragePage />}
         {page === 'help' && <HelpPage />}

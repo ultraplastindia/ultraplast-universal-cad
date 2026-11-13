@@ -10,6 +10,9 @@ import { ParamForm } from '../ui/ParamForm.tsx';
 import { toast } from '../ui/Toast.tsx';
 import type { Params } from '../core/types.ts';
 
+const readList = (k: string): string[] => { try { const v = JSON.parse(localStorage.getItem(k) ?? '[]'); return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []; } catch { return []; } };
+const writeList = (k: string, v: string[]): void => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked: favourites just are not remembered */ } };
+
 const KIND_LABEL = { dedicated: 'Engineering model', value: 'Value-based shape', assembly: 'Assembly' } as const;
 interface Draft { id: string | null; name: string; category: string; base: string; params: Params; note: string }
 
@@ -22,17 +25,22 @@ export function TypesPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [favs, setFavs] = useState<string[]>(() => readList('ultraplast.favTypes'));
+  const [recent, setRecent] = useState<string[]>(() => readList('ultraplast.recentTypes'));
+  const [onlyFav, setOnlyFav] = useState(false);
+  const toggleFav = (id: string) => { const n = favs.includes(id) ? favs.filter((x) => x !== id) : [...favs, id]; setFavs(n); writeList('ultraplast.favTypes', n); };
 
   const reload = () => listTypes().then((rows) => setDbTypes(rows.map((r) => ({ ...r }) as ComponentType))).catch(() => setDbTypes([]));
   useEffect(() => { if (auth.user) void reload(); else setDbTypes([]); }, [auth.user]);
 
   const all = useMemo(() => mergeTypes(builtin, dbTypes), [builtin, dbTypes]);
   const dbIds = useMemo(() => new Set(dbTypes.map((t) => t.id)), [dbTypes]);
-  const shown = all.filter((t) => (!cat || t.category === cat) && (!q.trim() || `${t.name} ${t.note} ${baseLabel(t.base)}`.toLowerCase().includes(q.trim().toLowerCase())))
+  const shown = all.filter((t) => (!onlyFav || favs.includes(t.id)) && (!cat || t.category === cat) && (!q.trim() || `${t.name} ${t.note} ${baseLabel(t.base)}`.toLowerCase().includes(q.trim().toLowerCase())))
     .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
   const isAdmin = !!auth.user?.isAdmin;
 
   const create = (t: ComponentType) => {
+    const r = [t.id, ...recent.filter((x) => x !== t.id)].slice(0, 6); setRecent(r); writeList('ultraplast.recentTypes', r);
     if (t.base === 'assembly') { go('assembly'); return; }
     const fam = getFamily(t.base);
     if (!fam) { toast('The base component of this type no longer exists.', 'err'); return; }
@@ -75,8 +83,10 @@ export function TypesPage() {
       <div className="actions" style={{ flexWrap: 'wrap' }}>
         <select value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Category"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.id}: {c.name}</option>)}</select>
         <input placeholder="Search types, for example duplex, roller, plate" value={q} onChange={(e) => setQ(e.target.value)} style={{ minWidth: 260 }} />
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}><input type="checkbox" checked={onlyFav} onChange={(e) => setOnlyFav(e.target.checked)} /> Favourites only ({favs.length})</label>
         <span className="muted">{shown.length} of {all.length} types{dbTypes.length ? `, ${dbTypes.length} stored in the database` : ''}</span>
       </div>
+      {recent.length > 0 && <div className="recent"><span className="muted">Recently used:</span>{recent.map((id) => all.find((t) => t.id === id)).filter((t): t is ComponentType => !!t).map((t) => <button key={t.id} onClick={() => create(t)}>{t.name}</button>)}</div>}
       {isAdmin && (
         <div className="box info"><b>Administrator.</b> Add your own types or change a type's starting values. Changes are stored in the database and everyone who is signed in sees them.
           <div className="actions"><button className="primary" disabled={busy} onClick={() => setDraft({ id: null, name: '', category: cat || 'B', base: 'custom_block', params: { ...getFamily('custom_block')!.defaults }, note: '' })}>Add a new type</button>
@@ -99,7 +109,7 @@ export function TypesPage() {
       <div className="typegrid">
         {shown.map((t) => (
           <div key={t.id} className="typecard">
-            <div className="tc-top"><span className="letter">{t.category}</span><span className={`badge ${t.kind}`}>{KIND_LABEL[t.kind]}</span></div>
+            <div className="tc-top"><span className="letter">{t.category}</span><span className={`badge ${t.kind}`}>{KIND_LABEL[t.kind]}</span><button className={`favbtn${favs.includes(t.id) ? ' on' : ''}`} style={{ marginLeft: 'auto' }} title={favs.includes(t.id) ? 'Remove from favourites' : 'Add to favourites'} aria-label="Favourite" onClick={() => toggleFav(t.id)}>{favs.includes(t.id) ? '★' : '☆'}</button></div>
             <b>{t.name}</b>
             <span className="muted">{t.base === 'assembly' ? 'Assembly designer' : baseLabel(t.base)}</span>
             <p>{t.note}</p>
