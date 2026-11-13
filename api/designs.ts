@@ -2,6 +2,7 @@ import { configured, ensureSchema, sql } from './_lib/db.js';
 import { bodyOf, fail, guardWrite, param, send } from './_lib/http.js';
 import type { Req, Res } from './_lib/http.js';
 import { currentUser } from './_lib/session.js';
+import { canWrite } from './_lib/roles.js';
 
 const MAX_BYTES = 1_500_000;
 const ID = /^[\w-]{1,64}$/;
@@ -22,6 +23,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     if (req.method === 'GET') {
       const id = param(req, 'id');
       if (id) {
+        if (!ID.test(id)) { fail(res, 400, 'Invalid id.'); return; }
         const rows = (await q`SELECT id, name, family_id, data, updated_at FROM designs WHERE id = ${id} AND owner_id = ${user.id}`) as Row[];
         if (!rows[0]) { fail(res, 404, 'Not found.'); return; }
         send(res, 200, out(rows[0])); return;
@@ -33,6 +35,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
     if (req.method === 'PUT') {
       if (!guardWrite(req, res)) return;
+      if (!canWrite(user.role)) { fail(res, 403, 'Your role is read-only (viewer). Ask the administrator for more access.'); return; }
       const b = bodyOf(req), kind = String(b.kind ?? ''), id = String(b.id ?? ''), name = String(b.name ?? '').trim().slice(0, 120);
       if (kind !== 'project' && kind !== 'assembly') { fail(res, 400, 'kind must be project or assembly.'); return; }
       if (!ID.test(id)) { fail(res, 400, 'Invalid id.'); return; }
@@ -49,6 +52,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
     if (req.method === 'DELETE') {
       if (!guardWrite(req, res)) return;
+      if (!canWrite(user.role)) { fail(res, 403, 'Your role is read-only (viewer). Ask the administrator for more access.'); return; }
       const id = param(req, 'id');
       if (!ID.test(id)) { fail(res, 400, 'Invalid id.'); return; }
       await q`DELETE FROM designs WHERE id = ${id} AND owner_id = ${user.id}`;

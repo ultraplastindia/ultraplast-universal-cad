@@ -2,6 +2,8 @@ import { configured, ensureSchema, sql } from './_lib/db.js';
 import { bodyOf, fail, guardWrite, param, send } from './_lib/http.js';
 import type { Req, Res } from './_lib/http.js';
 import { currentUser } from './_lib/session.js';
+import { canWrite } from './_lib/roles.js';
+import { imageMatches } from './_lib/files.js';
 
 const MAX_B64 = 3_000_000; // about 2.2 MB image (Vercel allows 4.5 MB request bodies)
 const ID = /^[\w-]{1,64}$/;
@@ -30,10 +32,12 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
     if (req.method === 'POST') {
       if (!guardWrite(req, res)) return;
+      if (!canWrite(user.role)) { fail(res, 403, 'Your role is read-only (viewer). Ask the administrator for more access.'); return; }
       const b = bodyOf(req), id = String(b.id ?? ''), mime = String(b.mime ?? ''), data = String(b.data ?? ''), name = String(b.name ?? 'picture').slice(0, 120);
       if (!ID.test(id)) { fail(res, 400, 'Invalid id.'); return; }
       if (!MIME.has(mime)) { fail(res, 400, 'Only JPEG, PNG or WebP pictures.'); return; }
       if (!/^[A-Za-z0-9+/=]+$/.test(data) || data.length > MAX_B64) { fail(res, 413, 'Picture is invalid or too large.'); return; }
+      if (!imageMatches(mime, data)) { fail(res, 400, 'The file is not really a picture of that type.'); return; }
       const designId = typeof b.designId === 'string' && ID.test(b.designId) ? b.designId : null;
       const rows = (await q`INSERT INTO uploads (id, owner_id, name, mime, data, design_id) VALUES (${id}, ${user.id}, ${name}, ${mime}, ${data}, ${designId})
         ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, mime = EXCLUDED.mime, data = EXCLUDED.data, design_id = EXCLUDED.design_id WHERE uploads.owner_id = EXCLUDED.owner_id RETURNING id`) as unknown[];
@@ -42,6 +46,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
     if (req.method === 'DELETE') {
       if (!guardWrite(req, res)) return;
+      if (!canWrite(user.role)) { fail(res, 403, 'Your role is read-only (viewer). Ask the administrator for more access.'); return; }
       const id = param(req, 'id');
       if (!ID.test(id)) { fail(res, 400, 'Invalid id.'); return; }
       await q`DELETE FROM uploads WHERE id = ${id} AND owner_id = ${user.id}`;

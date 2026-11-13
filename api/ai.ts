@@ -3,6 +3,8 @@ import { configured, ensureSchema, sql } from './_lib/db.js';
 import { bodyOf, fail, guardWrite, param, send } from './_lib/http.js';
 import type { Req, Res } from './_lib/http.js';
 import { currentUser } from './_lib/session.js';
+import { canAi } from './_lib/roles.js';
+import { imageMatches } from './_lib/files.js';
 
 const MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -28,10 +30,12 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
     if (req.method !== 'POST') { fail(res, 405, 'Method not allowed.'); return; }
     if (!guardWrite(req, res)) return;
+    if (!canAi(me.role)) { fail(res, 403, 'AI helpers are not available for your role. Ask the administrator.'); return; }
     const b = bodyOf(req), action = String(b.action ?? ''), mime = String(b.mime ?? ''), data = String(b.data ?? '');
     if (action !== 'analyse' && action !== 'mesh') { fail(res, 400, 'Unknown action.'); return; }
     if (!MIMES.has(mime)) { fail(res, 400, 'Use a JPEG, PNG or WebP picture.'); return; }
     if (!/^[A-Za-z0-9+/=]+$/.test(data) || data.length > 3_500_000) { fail(res, 400, 'The picture is too large (limit about 2.5 MB). Use the smaller copy.'); return; }
+    if (!imageMatches(mime, data)) { fail(res, 400, 'The file is not really a picture of that type.'); return; }
     // daily limit per user (0 = no AI calls allowed)
     const used = (await sql()`INSERT INTO ai_usage (user_id, n) VALUES (${me.id}, 1) ON CONFLICT (user_id, day) DO UPDATE SET n = ai_usage.n + 1 RETURNING n`) as { n: number }[];
     if (used[0].n > s.dailyLimit) { await sql()`UPDATE ai_usage SET n = n - 1 WHERE user_id = ${me.id} AND day = current_date`; fail(res, 429, `Daily AI limit reached (${s.dailyLimit} per person). Try tomorrow or ask the administrator.`); return; }

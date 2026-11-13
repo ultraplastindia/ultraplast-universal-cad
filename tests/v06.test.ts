@@ -106,3 +106,79 @@ describe('AI answer reader', () => {
     expect(a.flat!.outline.length).toBe(3);
   });
 });
+
+import { confidenceOf } from '../src/lib/trace.ts';
+import { asRole, canAi, canWrite } from '../api/_lib/roles.ts';
+import { buildDesign, rangeErrors } from '../src/lib/design.ts';
+import { validateDesign, geoStats } from '../src/lib/validation.ts';
+
+function pic(w: number, h: number, fg: (x: number, y: number) => boolean, fgv = 30, bgv = 235) {
+  const data = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const v = fg(x, y) ? fgv : bgv, i = (y * w + x) * 4; data[i] = data[i + 1] = data[i + 2] = v; data[i + 3] = 255; }
+  return { width: w, height: h, data };
+}
+describe('reading confidence', () => {
+  it('clean dark part on light background is high confidence', async () => {
+    const { backgroundDistance, largestComponent } = await import('../src/lib/trace.ts');
+    const img = pic(300, 300, (x, y) => x > 80 && x < 220 && y > 90 && y < 200);
+    const { dist } = backgroundDistance(img); const m = new Uint8Array(300 * 300); for (let i = 0; i < m.length; i++) m[i] = dist[i] > 60 ? 1 : 0;
+    const c = confidenceOf(img, largestComponent(m, 300, 300), 60);
+    expect(c.level).toBe('high');
+  });
+  it('part cut off by the picture edge and low contrast lowers the score', async () => {
+    const { backgroundDistance, largestComponent } = await import('../src/lib/trace.ts');
+    const img = pic(300, 300, (x, y) => x < 150 && y > 50 && y < 250, 150, 200);
+    const { dist } = backgroundDistance(img); const m = new Uint8Array(300 * 300); for (let i = 0; i < m.length; i++) m[i] = dist[i] > 20 ? 1 : 0;
+    const c = confidenceOf(img, largestComponent(m, 300, 300), 20);
+    expect(c.level).not.toBe('high'); expect(c.reasons.join(' ')).toMatch(/edge|contrast/);
+  });
+  it('an empty reading is low confidence', () => { expect(confidenceOf(pic(50, 50, () => false), new Uint8Array(2500), 60).level).toBe('low'); });
+});
+
+describe('roles', () => {
+  it('admin flag wins; unknown role falls back to engineer; no one can be made admin by the role text alone', () => {
+    expect(asRole('viewer', true)).toBe('admin'); expect(asRole('nonsense', false)).toBe('engineer'); expect(asRole('admin', false)).toBe('engineer'); expect(asRole('viewer', false)).toBe('viewer');
+  });
+  it('viewer cannot write or use AI; employee can write but not use AI; engineer can do both', () => {
+    expect([canWrite('viewer'), canAi('viewer')]).toEqual([false, false]);
+    expect([canWrite('employee'), canAi('employee')]).toEqual([true, false]);
+    expect([canWrite('engineer'), canAi('engineer')]).toEqual([true, true]);
+    expect([canWrite('admin'), canAi('admin')]).toEqual([true, true]);
+  });
+});
+
+describe('validation engine', () => {
+  const block = getFamily('custom_block')!;
+  it('a normal design passes geometry checks and always says it is not an approval', () => {
+    const v = validateDesign(buildDesign(block, { ...block.defaults, length: 100, width: 50, height: 10, cols: 0, rows: 0 }, 'A'));
+    expect(v.status).not.toBe('fail'); expect(v.checks.some((c) => /NOT an engineering/.test(c.text))).toBe(true);
+  });
+  it('a value outside its limits fails with a readable message and blocks export', () => {
+    const p = { ...block.defaults, length: 1e9 };
+    expect(rangeErrors(block, p).join(' ')).toMatch(/above the maximum/);
+    const v = validateDesign(buildDesign(block, p, 'A'));
+    expect(v.status).toBe('fail'); expect(v.summary).toMatch(/cannot export/);
+  });
+  it('a missing number is refused, not turned into zero', () => { expect(rangeErrors(block, { ...block.defaults, length: NaN }).join(' ')).toMatch(/enter a number/); });
+  it('3D size equals the typed size', () => {
+    const d = buildDesign(block, { ...block.defaults, length: 120, width: 45, height: 8, cols: 0, rows: 0 }, 'A');
+    const s = geoStats(d.geo!); expect(s.size.map((x) => +x.toFixed(3)).sort((a, b) => a - b)).toEqual([8, 45, 120]); expect(s.thinnest).toBeCloseTo(8, 6);
+  });
+  it('a thin feature warns', () => {
+    const d = buildDesign(block, { ...block.defaults, length: 100, width: 50, height: 0.3, cols: 0, rows: 0 }, 'A');
+    if (d.calc.ok) expect(validateDesign(d).checks.some((c) => /0\.5 mm/.test(c.text))).toBe(true);
+  });
+});
+
+import { imageMatches } from '../api/_lib/files.ts';
+describe('uploaded picture check', () => {
+  const b64 = (bytes: number[]) => Buffer.from(bytes).toString('base64');
+  it('accepts real signatures and refuses mismatches', () => {
+    expect(imageMatches('image/png', b64([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]))).toBe(true);
+    expect(imageMatches('image/jpeg', b64([0xff, 0xd8, 0xff, 0xe0, 0, 0]))).toBe(true);
+    expect(imageMatches('image/webp', b64([...Buffer.from('RIFF'), 1, 2, 3, 4, ...Buffer.from('WEBP')]))).toBe(true);
+    expect(imageMatches('image/png', b64([0xff, 0xd8, 0xff, 0xe0]))).toBe(false);          // a JPEG sent as PNG
+    expect(imageMatches('image/jpeg', Buffer.from('<html><script>').toString('base64'))).toBe(false); // a web page renamed to .jpg
+    expect(imageMatches('application/pdf', b64([0x25, 0x50, 0x44, 0x46, 0, 0]))).toBe(false);
+  });
+});

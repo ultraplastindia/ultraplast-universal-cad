@@ -17,6 +17,8 @@ export function ensureSchema(): Promise<void> {
     const q = sql();
     await q`CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text UNIQUE NOT NULL, name text NOT NULL DEFAULT '', password_hash text NOT NULL, is_admin boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now())`;
     await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified boolean NOT NULL DEFAULT true`;
+    await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'engineer'`;
+    await q`UPDATE users SET role = 'admin' WHERE is_admin AND role <> 'admin'`;
     await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS approved boolean NOT NULL DEFAULT true`;
     await q`ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled boolean NOT NULL DEFAULT false`;
     await q`CREATE TABLE IF NOT EXISTS settings (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`;

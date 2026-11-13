@@ -115,3 +115,6 @@ One clean header line on wide screens (logo, search, menu, and a user chip with 
 ### v0.8: Conveyor tools, favourites
 - New page **Conveyor tools** (menu): conveying speed, throughput, chain length and centre distance, sprocket pitch diameter, drive power and torque, roller pitch. Textbook formulas shown under each result; preliminary sizing only. Pure code in `src/lib/convcalc.ts` with tests in `tests/convcalc.test.ts`.
 - **Component types:** star any type as a favourite, filter "Favourites only", and a "Recently used" row for one-click return. Stored in this browser only.
+
+### v0.9: reliability upgrade
+Input limits enforced everywhere, crash-safe pages, autosave and recovery, a validation panel before export, four user roles, upload checks, picture-reading confidence with confirmation, security headers, 100+ new tests. Read `docs/AUDIT_REPORT.md` first: it lists what was tested, what was not, and a 10-minute checklist for your side.

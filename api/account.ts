@@ -34,6 +34,8 @@ export default async function handler(req: Req, res: Res): Promise<void> {
       if (need && String(b.code ?? '') !== need) { fail(res, 403, 'The sign-up code is wrong.'); return; }
       if (password.length < 8 || password.length > 200) { fail(res, 400, 'Password must be 8 to 200 characters.'); return; }
       const name = String(b.name ?? '').trim().slice(0, 80) || email.split('@')[0];
+      const flood = (await q`SELECT count(*)::int AS n FROM users WHERE created_at > now() - interval '1 hour' AND NOT approved`) as { n: number }[];
+      if ((flood[0]?.n ?? 0) >= 30) { fail(res, 429, 'Too many access requests right now. Try again later.'); return; } // stops a script from filling the user list
       const exists = (await q`SELECT 1 FROM users WHERE email = ${email}`) as unknown[];
       if (exists.length) { fail(res, 409, 'An account with this email already exists. Sign in instead.'); return; }
       const codes = await needOtp();
