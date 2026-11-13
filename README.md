@@ -111,3 +111,7 @@ Updated `public/assets/Logo.png` to the new logo. A step-by-step sign-in guide i
 
 ### v0.7: tidier header
 One clean header line on wide screens (logo, search, menu, and a user chip with initials, name and role at the right); on laptops the menu moves to a second row. No features changed.
+
+### v0.8: Conveyor tools, favourites
+- New page **Conveyor tools** (menu): conveying speed, throughput, chain length and centre distance, sprocket pitch diameter, drive power and torque, roller pitch. Textbook formulas shown under each result; preliminary sizing only. Pure code in `src/lib/convcalc.ts` with tests in `tests/convcalc.test.ts`.
+- **Component types:** star any type as a favourite, filter "Favourites only", and a "Recently used" row for one-click return. Stored in this browser only.
