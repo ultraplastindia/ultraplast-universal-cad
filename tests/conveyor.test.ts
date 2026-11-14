@@ -83,3 +83,28 @@ describe('catalogue coverage after v1.0', () => {
     for (const [k, fam] of Object.entries(IMPLEMENTED)) if (fresh.has(fam)) expect(PARTIAL[k], k).toBeTruthy();
   });
 });
+
+import { SPROCKET_CATALOG, SPROCKET_GROUPS } from '../src/data/sprocketCatalog.ts';
+describe('sprocket catalogue (v1.1)', () => {
+  it('has the 22 requested types in the right groups', () => {
+    expect(SPROCKET_CATALOG.length).toBe(22);
+    const n = (g: string) => SPROCKET_CATALOG.filter((e) => e.group === g).length;
+    expect([n('Hub style'), n('Strand capacity'), n('Mounting and bore'), n('Conveyor application')]).toEqual([4, 5, 6, 7]);
+    expect(SPROCKET_GROUPS.length).toBe(4);
+    expect(new Set(SPROCKET_CATALOG.map((e) => e.id)).size).toBe(22);
+  });
+  it('every entry has all four blocks and exactly two sentences in its overview', () => {
+    for (const e of SPROCKET_CATALOG) {
+      for (const k of ['overview', 'materials', 'bores', 'chains', 'duty', 'applications', 'advantages', 'maintenance', 'custom'] as const) expect(e[k].trim().length, `${e.id} ${k}`).toBeGreaterThan(10);
+      const sentences = e.overview.split(/(?<=[.!?])\s+/).filter(Boolean);
+      expect(sentences.length, `${e.id} overview`).toBe(2);
+    }
+  });
+  it('every starting design calculates in the sprocket designer with no errors', () => {
+    const f = getFamily('sprocket_types')!;
+    for (const e of SPROCKET_CATALOG) { const c = f.calculate(e.params); expect(c.errors.join('|'), e.id).toBe(''); expect(c.ok, e.id).toBe(true); }
+  });
+  it('types the 3D model only approximates say so', () => {
+    for (const id of ['SC-TAPERLOCK', 'SC-QD', 'SC-SQUARE', 'SC-SPLIT', 'SC-SEGMENTAL', 'SC-MODULAR', 'SC-TABLETOP', 'SC-SHEAR', 'SC-TYPE-D']) expect(SPROCKET_CATALOG.find((e) => e.id === id)!.modelNote, id).toBeTruthy();
+  });
+});

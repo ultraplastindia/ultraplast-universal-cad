@@ -130,3 +130,9 @@ Input limits enforced everywhere, crash-safe pages, autosave and recovery, a val
 ### v1.0.1: reference chain sizes
 - 7 ready table-top chain sizes (`MB-REF-*`, pitch 38.1 mm, several widths and rod sizes) taken from the basic numbers in public Rexnord and System Plast data sheets. See `docs/REFERENCE_DATA.md` for the exact values, sources and cautions. They are size references only, not Ultraplast products, and the shape is still the generic module.
 - 408 automated tests pass. No new environment variables, database changes or packages.
+
+## What is new in v1.1: Sprocket catalogue
+- New page **Sprocket catalogue** (menu). 22 conveyor sprocket types in four groups: hub styles (Type A flat plate, B single hub, C double hub, D detachable hub), strand capacities (simplex, duplex, triplex, multi-strand, double-single), mounting and bores (finished bore, plain bore, Taper-Lock, QD, square bore, split) and conveyor applications (double-pitch, idler, segmental rim, drum / traction wheel, modular belt, table-top / slat chain, shear pin).
+- Every entry has a two-sentence overview, standard materials, bore options, chain compatibility, load duty, applications, advantages, maintenance benefits and the list of customisable values. Filter by group, search, download the table as CSV.
+- **Customise values** (chain, teeth, bore, strands, material), then **Open in designer** for the 2D drawing, 3D model and exports. Taper-Lock, QD, square bore, split halves, segmental rim, modular-belt and table-top tooth forms are approximated in the 3D model; each entry says what is not drawn.
+- Data file: `src/data/sprocketCatalog.ts` (edit the text there). No new environment variables, database changes or packages. 412 automated tests pass.
