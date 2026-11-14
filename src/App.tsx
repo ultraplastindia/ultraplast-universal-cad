@@ -10,13 +10,14 @@ import { SavedPage } from './pages/SavedPage.tsx';
 import { AboutPage, CoveragePage, HelpPage } from './pages/InfoPages.tsx';
 import { AssemblyPage } from './pages/AssemblyPage.tsx';
 import { TypesPage } from './pages/TypesPage.tsx';
+import SprocketCatalogPage from './pages/SprocketCatalogPage.tsx';
 import { ImagePage } from './pages/ImagePage.tsx';
 import { AccountPage } from './pages/AccountPage.tsx';
 import { SettingsPage } from './pages/SettingsPage.tsx';
 import { ToolsPage } from './pages/ToolsPage.tsx';
 import { authReady, useAuth } from './cloud/client.ts';
 
-const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['tools', 'Conveyor tools'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
+const NAV: [string, string][] = [['dashboard', 'Dashboard'], ['components', 'Components'], ['types', 'Component types'], ['sprockets', 'Sprocket catalogue'], ['designer', '2D / 3D Designer'], ['image', 'Image to 3D'], ['assembly', 'Assembly'], ['tools', 'Conveyor tools'], ['saved', 'Saved designs'], ['coverage', 'Coverage'], ['help', 'Help'], ['about', 'About'], ['account', 'Account']];
 
 export default function App() {
   const r = useRoute();
@@ -55,6 +56,7 @@ export default function App() {
         {page === 'assembly' && <AssemblyPage />}
         {page === 'image' && <ImagePage />}
         {page === 'types' && <TypesPage />}
+        {page === 'sprockets' && <SprocketCatalogPage />}
         {page === 'account' && <AccountPage />}
         {page === 'settings' && <SettingsPage />}
         {page === 'tools' && <ToolsPage />}
