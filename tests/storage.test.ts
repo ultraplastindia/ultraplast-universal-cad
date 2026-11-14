@@ -38,7 +38,7 @@ describe('search', () => {
     expect(searchCatalogue([f], 'sprocket', { material: 'Nylon PA6' }).hits.length).toBe(0);
   });
   it('lists pending catalogue items and suggests', () => {
-    expect(searchCatalogue([f], 'tabletop').pending.length).toBeGreaterThan(0);
+    expect(searchCatalogue([f], 'tapered').pending.length).toBe(0); // v1.0: every catalogue item now has a model
     expect(suggest([f], 'sproc')).toContain('Roller chain sprocket');
   });
 });

@@ -5,7 +5,7 @@
 - `replicad` / `replicad-opencascadejs` are listed as "*" because exact versions could not be verified offline. After `npm install`, pin both to the installed version (`npm ls replicad replicad-opencascadejs`). Assembly STEP needs a compound builder (`compoundShapes` or `makeCompound`); if your version has neither, the ZIP contains per-part STEP files instead.
 - Logo: none was supplied. Put it at `public/assets/Logo.png`.
 - Sprocket tooth profile follows the ISO 606 limit formulas with an S-curve (seat arc, convex flank arc, tip arc). Verify the arc arrangement against the standard figure or supplier drawing; tooth side chamfer/radius and tolerances are not modelled.
-- No proprietary Ultraplast plastic chain, belt or sprocket geometry (needs your catalogue data). 77 of 125 catalogue items remain pending, notably all plastic chains and belts, motors/gearboxes, frames beyond single tube members, conveyors and drive/transfer assemblies.
+- No proprietary Ultraplast plastic chain, belt or sprocket geometry (needs your catalogue data). (v1.0 update: every catalogue item now has a generic model, see the v1.0 section; the original note was: 77 of 125 catalogue items remain pending, notably all plastic chains and belts, motors/gearboxes, frames beyond single tube members, conveyors and drive/transfer assemblies.)
 - Quick mode derives secondary values with fixed rules (see `src/families/autofill.ts`); they are sensible defaults, not optimised designs. Advanced mode lets you set every value.
 - Dimensions are in millimetres only (no inch display).
 - Several implemented items are partial (see the Coverage page), for example fasteners = hex nut only, wear strips = flat strips, rollers = plain tube rollers.
@@ -36,3 +36,14 @@
 - Changing `AUTH_SECRET` makes the saved mail password and AI keys unreadable: enter them again in Settings.
 - Settings is hidden from non-administrators and also refused by the server for them.
 - **Access approval** needs the cloud database. In browser-only mode (no Neon) nobody can be blocked, because everything runs in the visitor's own browser. The administrator is not emailed about new requests; check Settings > Users.
+
+## v1.0 additions: limits to know
+- **The 13 new families are generic.** They are NOT Ultraplast's own chain, belt or housing geometry. Knuckles, tooth pockets, side tabs, threads, keyways and bearing inserts are not modelled. Check every new part against the real one before use.
+- **Modular belt / chain:** hinge rods are drawn as square bars (the 3D engine builds round rods only along a part's own axis). Roller-top shows balls. Side-flexing and radius styles are a straight module (no flex clearance). Mass is approximate (overlapping solids are counted twice).
+- **Roller chain:** pitch, roller diameter and inner width come from the stored table. Pin diameter, plate height and plate thickness are ESTIMATED from the pitch; check them with the chain maker.
+- **Pillow block:** the base bolt holes are not in the 3D model. **Take-up unit:** the screw is a square bar; no threads, no load rating.
+- **Bracket family:** sharp bend, holes in the base leg only.
+- **Motor / gearbox:** outline for layout only. Mass, power, speed and ratio are NOT calculated.
+- **Tapered roller:** built from stacked short cylinders (visible steps in 3D and STEP). **Curved section:** bed and side guards only, arcs approximated by straight edges.
+- **Assemblies (inclined, declined, transfer, return, tensioning, modular, custom, chain / sprocket drives):** built by hand in the Assembly designer; there is no automatic layout.
+- Tests cover formulas, limits, geometry-versus-drawing consistency and extreme values. They have not been run in a browser, and no exported file was opened in CAD software.

@@ -118,3 +118,15 @@ One clean header line on wide screens (logo, search, menu, and a user chip with 
 
 ### v0.9: reliability upgrade
 Input limits enforced everywhere, crash-safe pages, autosave and recovery, a validation panel before export, four user roles, upload checks, picture-reading confidence with confirmation, security headers, 100+ new tests. Read `docs/AUDIT_REPORT.md` first: it lists what was tested, what was not, and a 10-minute checklist for your side.
+
+## What is new in v1.0: every catalogue item has a model
+- **13 new component families** (generic standard-style models built from typed values, NOT Ultraplast's proprietary geometry): *Modular chain / belt* (flat, grid, perforated, friction top, ball top, cleated, ribbed), *Roller chain* (plain, K1 lugs, hollow pin, from the ISO 606 / ASME B29.1 table), *Bearing housing* (square or round flange, pillow block), *Shaft coupling* (sleeve, jaw, flange), *Shaft collar*, *Retaining ring*, *Take-up / tensioning unit*, *Bent bracket / stop / side guard / clamp / mount*, *Motor / gearbox* (outline only), *Set screw*, *Grease nipple*, *Tapered roller*, *Curved conveyor section*.
+- The Coverage page now shows **125 of 125** catalogue items covered. Most are marked **partial** with a plain note of what is missing (for example "straight module only, no side-flex clearance"). Nothing is claimed beyond what the model does.
+- Component types opened from the library start with sensible values for that item (for example "Open-grid belts" starts as a grid belt, "Stainless steel chains" starts in SS 304).
+- Totals: 40 families (was 27), 714 ready variants (was 627). **No new environment variables, no database change, no new packages.**
+- Tests: 407 automated tests pass (new file `tests/conveyor.test.ts`; every new family is also in the stress test that tries extreme values).
+- Not verified here: the real `npm run build`, the browser screens, STEP/STL/PDF file writing and opening exports in CAD (this environment has no internet). See docs/LIMITATIONS.md.
+
+### v1.0.1: reference chain sizes
+- 7 ready table-top chain sizes (`MB-REF-*`, pitch 38.1 mm, several widths and rod sizes) taken from the basic numbers in public Rexnord and System Plast data sheets. See `docs/REFERENCE_DATA.md` for the exact values, sources and cautions. They are size references only, not Ultraplast products, and the shape is still the generic module.
+- 408 automated tests pass. No new environment variables, database changes or packages.
