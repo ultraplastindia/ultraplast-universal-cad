@@ -22,6 +22,7 @@ import { AUTOFILL, BASIC } from './autofill.ts';
 import { CUSTOM_FAMILIES } from './custom/custom.ts';
 import { TURNED_FAMILIES } from './custom/turned.ts';
 import { SPROCKET_ALL } from './sprocket/multi.ts';
+import { CONVEYOR_FAMILIES } from './extra/conveyor.ts';
 
 const f2 = (n: unknown) => String(+Number(n).toFixed(2));
 const kd = (label: string, v: number, unit = 'mm') => ({ label, value: f2(v), unit });
@@ -176,5 +177,5 @@ const RAW: Omit<Family, 'basic' | 'autofill'>[] = [
     fields: N.PLATE_FIELDS, defaults: N.plateDefaults, variants: plateVariants, calculate: N.calcPlate, views: N.plateViews, geo: N.plateGeo, solid: (R, c) => primsSolid(R, N.plateGeo(c)), asm: () => ({ role: 'other' }),
     partNo: (p) => `PL-${p.length}x${p.width}x${p.thickness}`, materialOf: (p) => String(p.material), keyDims: (c) => [kd('Length', c.L), kd('Width', c.W), kd('Thickness', c.t)], notes: (c) => [`${c.centres.length} x Ø${f2(c.dh)} THROUGH HOLES`, 'SQUARE CORNERS, PLAIN HOLES', 'ALL DIMENSIONS IN MM UNLESS STATED'] },
 ];
-export const FAMILIES: Family[] = [...RAW, ...CUSTOM_FAMILIES, ...TURNED_FAMILIES, SPROCKET_ALL].map((f) => ({ ...f, basic: BASIC[f.id] ?? [], autofill: AUTOFILL[f.id] }));
+export const FAMILIES: Family[] = [...RAW, ...CUSTOM_FAMILIES, ...TURNED_FAMILIES, ...CONVEYOR_FAMILIES, SPROCKET_ALL].map((f) => ({ ...f, basic: BASIC[f.id] ?? [], autofill: AUTOFILL[f.id] }));
 export const getFamily = (id: string): Family | undefined => FAMILIES.find((x) => x.id === id);

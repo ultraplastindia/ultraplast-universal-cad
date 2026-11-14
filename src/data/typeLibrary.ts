@@ -1,5 +1,5 @@
 import type { Params } from '../core/types.ts';
-import { CATEGORIES, IMPLEMENTED, PARTIAL } from './catalogue.ts';
+import { CATEGORIES, IMPLEMENTED, PARTIAL, PRESETS } from './catalogue.ts';
 import { FAMILIES, getFamily } from '../families/index.ts';
 import { MULTI_VARIANTS } from '../families/sprocket/multi.ts';
 import { blockDefaults, roundDefaults } from '../families/custom/custom.ts';
@@ -70,7 +70,7 @@ export function builtinTypes(): ComponentType[] {
   const out: ComponentType[] = SPROCKET_STYLES.map((s) => ({ id: `B-style-${slug(s.name)}`, name: s.name, category: 'B', base: 'sprocket_types', params: { ...variant(s.v), ...(s.over ?? {}) }, note: s.note, kind: 'dedicated' as const, builtin: true }));
   for (const c of CATEGORIES) for (const item of c.items) {
     const key = `${c.id}:${item}`, fam = IMPLEMENTED[key], id = `${c.id}-${slug(item)}`;
-    if (fam && getFamily(fam)) out.push({ id, name: item, category: c.id, base: fam, params: { ...getFamily(fam)!.defaults }, note: PARTIAL[key] ? `Partly covered: ${PARTIAL[key]}.` : 'Has its own engineering model.', kind: 'dedicated', builtin: true });
+    if (fam && getFamily(fam)) out.push({ id, name: item, category: c.id, base: fam, params: fam === 'sprocket_types' ? genericFor(c.id, item).params : { ...getFamily(fam)!.defaults, ...(PRESETS[key] ?? {}) }, note: PARTIAL[key] ? `Partly covered: ${PARTIAL[key]}.` : 'Has its own engineering model.', kind: 'dedicated', builtin: true });
     else if (fam === 'assembly') out.push({ id, name: item, category: c.id, base: 'assembly', params: {}, note: PARTIAL[key] ? `Partly covered: ${PARTIAL[key]}.` : 'Built from components in the Assembly designer.', kind: 'assembly', builtin: true });
     else { const g = genericFor(c.id, item); out.push({ id, name: item, category: c.id, base: g.base, params: g.params, note: g.note, kind: g.base === 'assembly' ? 'assembly' : g.base === 'sprocket_types' ? 'dedicated' : 'value', builtin: true }); }
   }
