@@ -98,6 +98,8 @@ export const adminDo = <T = AdminOverview>(action: string, body: object = {}): P
 export interface AiStatus { vision: string[]; mesh: string[]; dailyLimit: number }
 export const aiStatus = (): Promise<AiStatus> => call('/api/ai');
 export const aiAnalyse = (mime: string, data: string): Promise<{ provider: string; analysis: import('../../api/_lib/aiShapes.ts').AiAnalysis }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'analyse', mime, data }) });
+export const aiDrawing = (mime: string, data: string): Promise<{ provider: string; drawing: import('../../api/_lib/aiStudio.ts').AiDrawing }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'drawing', mime, data }) });
+export const aiAssist = (prompt: string): Promise<{ provider: string; text: string }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'assist', prompt }) });
 export const aiMesh = (mime: string, data: string): Promise<{ provider: string; glb?: string; jobId?: string }> => call('/api/ai', { method: 'POST', body: JSON.stringify({ action: 'mesh', mime, data }) });
 export const aiJob = (id: string): Promise<{ status: string; progress: number; glbUrl?: string }> => call(`/api/ai?job=${encodeURIComponent(id)}`);
 export const aiFile = (url: string): Promise<{ glb: string }> => call(`/api/ai?file=${encodeURIComponent(url)}`);
