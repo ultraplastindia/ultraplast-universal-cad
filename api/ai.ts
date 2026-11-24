@@ -1,4 +1,4 @@
-import { analyse, loadAi, meshFile, meshStart, meshStatus, order } from './_lib/ai.js';
+import { analyse, assistText, loadAi, meshFile, meshStart, meshStatus, order, readDrawing } from './_lib/ai.js';
 import { configured, ensureSchema, sql } from './_lib/db.js';
 import { bodyOf, fail, guardWrite, param, send } from './_lib/http.js';
 import type { Req, Res } from './_lib/http.js';
@@ -12,6 +12,8 @@ const MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
  *  GET  /api/ai                          -> which AI services are switched on
  *  POST /api/ai {action:'analyse', mime, data}   picture -> part type + relative proportions
  *  POST /api/ai {action:'mesh', mime, data}      picture -> 3D mesh (GLB base64) or a job id
+ *  POST /api/ai {action:'drawing', mime, data}   Design Studio: drawing / sketch -> unconfirmed geometry + written dimensions
+ *  POST /api/ai {action:'assist', prompt}        Design Studio: instruction + design summary -> proposed actions (text only)
  *  GET  /api/ai?job=ID                   -> mesh job status (Meshy)
  *  GET  /api/ai?file=URL                 -> finished GLB from Meshy (host-checked) */
 export default async function handler(req: Req, res: Res): Promise<void> {
@@ -32,15 +34,22 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     if (!guardWrite(req, res)) return;
     if (!canAi(me.role)) { fail(res, 403, 'AI helpers are not available for your role. Ask the administrator.'); return; }
     const b = bodyOf(req), action = String(b.action ?? ''), mime = String(b.mime ?? ''), data = String(b.data ?? '');
-    if (action !== 'analyse' && action !== 'mesh') { fail(res, 400, 'Unknown action.'); return; }
-    if (!MIMES.has(mime)) { fail(res, 400, 'Use a JPEG, PNG or WebP picture.'); return; }
-    if (!/^[A-Za-z0-9+/=]+$/.test(data) || data.length > 3_500_000) { fail(res, 400, 'The picture is too large (limit about 2.5 MB). Use the smaller copy.'); return; }
-    if (!imageMatches(mime, data)) { fail(res, 400, 'The file is not really a picture of that type.'); return; }
+    if (action !== 'analyse' && action !== 'mesh' && action !== 'drawing' && action !== 'assist') { fail(res, 400, 'Unknown action.'); return; }
+    const prompt = String(b.prompt ?? '');
+    if (action === 'assist') {
+      if (!prompt.trim() || prompt.length > 60_000) { fail(res, 400, 'The request is empty or too long.'); return; }
+    } else {
+      if (!MIMES.has(mime)) { fail(res, 400, 'Use a JPEG, PNG or WebP picture.'); return; }
+      if (!/^[A-Za-z0-9+/=]+$/.test(data) || data.length > 3_500_000) { fail(res, 400, 'The picture is too large (limit about 2.5 MB). Use the smaller copy.'); return; }
+      if (!imageMatches(mime, data)) { fail(res, 400, 'The file is not really a picture of that type.'); return; }
+    }
     // daily limit per user (0 = no AI calls allowed)
     const used = (await sql()`INSERT INTO ai_usage (user_id, n) VALUES (${me.id}, 1) ON CONFLICT (user_id, day) DO UPDATE SET n = ai_usage.n + 1 RETURNING n`) as { n: number }[];
     if (used[0].n > s.dailyLimit) { await sql()`UPDATE ai_usage SET n = n - 1 WHERE user_id = ${me.id} AND day = current_date`; fail(res, 429, `Daily AI limit reached (${s.dailyLimit} per person). Try tomorrow or ask the administrator.`); return; }
     try {
       if (action === 'analyse') send(res, 200, await analyse(s, { mime, base64: data }));
+      else if (action === 'drawing') send(res, 200, await readDrawing(s, { mime, base64: data }));
+      else if (action === 'assist') send(res, 200, await assistText(s, prompt));
       else send(res, 200, await meshStart(s, { mime, base64: data }));
     } catch (e) {
       await sql()`UPDATE ai_usage SET n = greatest(n - 1, 0) WHERE user_id = ${me.id} AND day = current_date`; // a failed call does not count

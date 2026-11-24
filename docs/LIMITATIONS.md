@@ -47,3 +47,16 @@
 - **Tapered roller:** built from stacked short cylinders (visible steps in 3D and STEP). **Curved section:** bed and side guards only, arcs approximated by straight edges.
 - **Assemblies (inclined, declined, transfer, return, tensioning, modular, custom, chain / sprocket drives):** built by hand in the Assembly designer; there is no automatic layout.
 - Tests cover formulas, limits, geometry-versus-drawing consistency and extreme values. They have not been run in a browser, and no exported file was opened in CAD software.
+
+## v1.2 Design Studio: limits to know
+- **Not a full CAD system.** It covers 2D sketching, dimensions, constraints and prism / revolve / loft solids with cuts. There are no threads, knurls, drafts, sheet-metal bends, variable fillets or face-by-face editing.
+- **DWG:** not read or written (closed format). Save as DXF in your CAD program. **IGES:** not exported; use STEP.
+- **PDF:** the page is used as a picture and its printed text is read. Lines drawn inside the PDF are NOT converted to CAD lines automatically: trace them, draw over the page, or use AI reading. Scanned PDFs have no text: use AI reading. The scale from the page size assumes the drawing is 1:1 (or the `SCALE 1:n` written on it) and must be confirmed with "Set scale".
+- **Pictures and hand sketches:** tracing finds the outline of ONE main object (photos, silhouettes). AI reading of drawings and sketches is approximate: positions are rough, and every value must be checked. Only written dimensions are taken; missing sizes are listed, never guessed.
+- **DXF import:** blocks (INSERT), hatches and DXF dimension objects are counted and reported but not imported. Splines given only as control points are drawn through those points (shape may differ slightly).
+- **Constraints:** a numeric solver; very large sketches (hundreds of constrained items) become slow. Symmetric uses the start points of the first two selected lines.
+- **3D quick preview, STL/OBJ/GLB and mass** use exact primitives: sloped revolve edges are fine steps (mass is still exact), lofts are 24 slices. Fillets, chamfers, shells, intersections, partial revolves and cuts crossing an outline exist ONLY in the exact model ("Build exact model") and STEP. The exact kernel (OpenCascade) and these operations were not run here (no browser kernel available); open the STEP in your CAD to confirm. Overlapping "add" bodies count the overlap twice in the quick mass.
+- **Background processing:** the exact model is built in the page (a progress message shows); very complex models can make the page busy for some seconds.
+- **AI assistant:** only the listed design actions can be applied; anything else is ignored and shown. Answers depend on the AI service and the model name set in Settings. AI costs follow the existing per-person daily limit.
+- **Cloud size:** a design can be about 1.4 MB in the cloud database. Larger pictures are stored as separate uploads (images only, about 2.2 MB each); oldest versions are dropped first if needed, with a message.
+- **Drawing sheet** views are generated: front/side views of extruded parts show outlines and hidden hole lines; no automatic dimensions on those views; nominal sizes only, no tolerances.

@@ -1,4 +1,6 @@
 import { ANALYSIS_PROMPT, parseAnalysis } from './aiShapes.js';
+import { DRAWING_PROMPT, parseDrawing } from './aiStudio.js';
+import type { AiDrawing } from './aiStudio.js';
 import type { AiAnalysis } from './aiShapes.js';
 import { getSetting, setSetting, unseal } from './settings.js';
 
@@ -85,6 +87,32 @@ export async function analyse(s: AiSettings, img: { mime: string; base64: string
       if ('error' in a) { errs.push(`${id}: ${a.error}`); continue; }
       return { provider: id, analysis: a };
     } catch (e) { errs.push(e instanceof Error ? e.message : String(e)); }
+  }
+  throw new Error(errs.join(' | '));
+}
+
+/** Design Studio: reads a drawing / sketch / photo into unconfirmed geometry and written dimensions. */
+export async function readDrawing(s: AiSettings, img: { mime: string; base64: string }): Promise<{ provider: ProviderId; drawing: AiDrawing }> {
+  const ids = order(s, 'vision') as VisionId[];
+  if (!ids.length) throw new Error('No AI is switched on. The administrator can add a key in Settings > AI.');
+  const errs: string[] = [];
+  for (const id of ids) {
+    try {
+      const p = s.providers[id], text = await vision(id, keyOf(p)!, p.model, img, DRAWING_PROMPT, 6000), d = parseDrawing(text);
+      if ('error' in d) { errs.push(`${id}: ${d.error}`); continue; }
+      return { provider: id, drawing: d };
+    } catch (e) { errs.push(e instanceof Error ? e.message : String(e)); }
+  }
+  throw new Error(errs.join(' | '));
+}
+/** Design Studio assistant: text only. Returns the raw answer; the browser checks it against the design (allowed actions only). */
+export async function assistText(s: AiSettings, prompt: string): Promise<{ provider: ProviderId; text: string }> {
+  const ids = order(s, 'vision') as VisionId[];
+  if (!ids.length) throw new Error('No AI is switched on. The administrator can add a key in Settings > AI.');
+  const errs: string[] = [];
+  for (const id of ids) {
+    try { const p = s.providers[id], text = await vision(id, keyOf(p)!, p.model, null, prompt, 3000); if (text.includes('{')) return { provider: id, text }; errs.push(`${id}: no JSON in the answer`); }
+    catch (e) { errs.push(e instanceof Error ? e.message : String(e)); }
   }
   throw new Error(errs.join(' | '));
 }
