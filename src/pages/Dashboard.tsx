@@ -39,6 +39,7 @@ export function Dashboard() {
           <a className="step" href="#/designer/sprocket"><div className="ic"><Icon name="sliders" /></div><b>2. Specify</b><p>Enter a few key values; the rest is derived. Formulas and warnings update live.</p></a>
           <a className="step" href="#/assembly"><div className="ic"><Icon name="cube" /></div><b>3. Inspect and assemble</b><p>Dimensioned 2D sheets, a 3D model, and assemblies with fit checks.</p></a>
           <a className="step" href="#/help"><div className="ic"><Icon name="download" /></div><b>4. Export</b><p>DXF, STEP, STL, PDF, BOM and a full ZIP package.</p></a>
+          <a className="step" href="#/studio"><div className="ic"><Icon name="sliders" /></div><b>New: Design Studio</b><p>Draw any part, or import a sketch, photo, PDF or DXF; dimensions, constraints, 3D and an AI assistant.</p></a>
         </div>
         {recent.length > 0 && <><div className="section-title"><h2>Recently used</h2></div><div className="chips">{recent.map((f) => <a key={f.id} className="chip" href={`#/designer/${f.id}`}>{f.name}</a>)}</div></>}
         <div className="section-title"><h2>Component families</h2><a href="#/components">Browse all</a></div>

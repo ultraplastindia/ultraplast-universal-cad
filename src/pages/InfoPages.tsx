@@ -30,6 +30,15 @@ export function HelpPage() {
     <div className="page prose">
       <PageHeader title="Help" subtitle="How to go from a search to a drawing, model and CAD files." />
       <ol><li>Search for a component (for example "sprocket"; press / anywhere to search) or pick a category.</li><li>Press <b>Design</b>, or click a variant chip to start from a ready-made size.</li><li>In <b>Quick</b> mode enter only the key values; everything else is derived and listed under "Derived automatically". Switch to <b>Advanced</b> to set every parameter yourself. Errors and warnings update live; geometry is only generated when the inputs are valid.</li><li>In the 2D tab click any element to select it; click a dimension marked editable to change it.</li><li>Use the 2D drawing and 3D model tabs, then download files from the Downloads tab.</li><li>Save the design to this browser, or export a project file as a backup.</li></ol>
+      <h2>Design Studio (new in v1.2)</h2>
+      <ol>
+        <li>Open <a href="#/studio">Design Studio</a>. Pick a tool on the left (Line, Rectangle, Circle, Freehand, Hole pattern, ...). Click in the drawing, or type exact points in the box at the bottom: <code>x,y</code>, <code>@dx,dy</code>, <code>@length&lt;angle</code> or one length.</li>
+        <li>The <b>Parameters</b> tab lists the important sizes it finds (overall length and width, bore, hole diameters, pitch circle, number of holes, thickness). Type a value and the drawing changes. Dimensions you add become driving when you type a value for them; <b>Constraints</b> keep lines horizontal, parallel, concentric and so on.</li>
+        <li><b>Import</b> a photo, hand sketch, scan, PDF drawing, SVG or DXF. Pictures stay as a locked reference layer (the original is never changed). Use <b>Set scale</b> with one known distance, then trace, draw over it, or let the AI read it. Everything read from a picture or AI is marked unconfirmed (dashed orange) until you tick Confirmed. PDF text such as <code>Ø25</code> or <code>R8</code> is listed for you to confirm and apply.</li>
+        <li><b>3D</b>: select a closed outline and press Extrude (or Revolve around a centre line, or Loft between two outlines). Cuts make pockets and holes. Fillet, chamfer and shell appear in the exact model (button in the 3D view) and the STEP file.</li>
+        <li><b>AI</b>: type an instruction ("make the centre hole 35 mm"). The proposed changes show in green; accept or reject each one. Without an AI key the built-in reader handles common instructions. AI advice is a suggestion, not an engineering approval.</li>
+        <li>Save (Ctrl+S), Save version, Undo (Ctrl+Z) and Export (true-size DXF, drawing sheet DXF/SVG/PDF/PNG, STEP, STL, OBJ, GLB, GLTF, CSV, ZIP). Work is autosaved in this browser every few seconds.</li>
+      </ol>
       <h2>Important limitations</h2>
       <ul>
         <li>All results are <b>PRELIMINARY</b>. Do not manufacture from them without engineering validation.</li>
